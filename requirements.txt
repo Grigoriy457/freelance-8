@@ -1,0 +1,4 @@
+requests==2.26.0
+rich==10.9.0
+Flask==1.1.2
+gunicorn==20.0.4
