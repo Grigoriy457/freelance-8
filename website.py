@@ -1,9 +1,15 @@
 from flask import *
 import time
 from vk_parser import parser
+from datetime import timedelta
 
 app = Flask(__name__)
 posts = list()
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=200)
 
 @app.route('/', methods=['GET'])
 def home():
