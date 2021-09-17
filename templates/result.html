@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>VK parser (result)</title>
+     <!-- <link rel="stylesheet" href="static/css/style.css"> -->
+     <link rel="icon" type="image/png" href="static/images/favicon.png"/>
+</head>
+<body>
+     Page: {{ page }}
+     <p>
+          All pages: {% for i in range_posts %}<a href="/result/{{ i }}">{{ i }}</a> {% endfor %}
+     </p>
+     <p>
+          {% for i in posts[((page - 1) * 1000):(page * 1000)] %}
+               <fieldset>
+                    <legend>Post index: {{ i[6] }}</legend>
+
+                    <b style="color: rgb(41 129 219);">Url:</b> <a href="{{ i[0] }}" target="_blank">{{ i[0] }}</a>
+
+                    <br>
+
+                    <b style="color: rgb(41 129 219);">Date:</b> {{ i[1] }}
+
+                    <br>
+
+                    <b style="color: rgb(41 129 219);">Likes:</b> {{ i[2] }}; Reposts: {{ i[3] }}
+
+                    <br>
+
+                    {% if i[4] != '' %}
+                         <b style="color: rgb(41 129 219);">Text:</b> {{ i[4] }}<br>
+                    {% endif %}
+
+                    {% if i[5] != [] %}
+                         <b style="color: rgb(41 129 219);">Img:</b>
+                         {% for j in i[5] %}
+                              <img src="{{ j }}" alt="{{ j }}">
+                         {% endfor %}
+                    {% endif %}
+               </fieldset>
+               <br>
+               <br>
+          {% endfor %}
+     </p>
+     <p>
+          All pages: {% for i in range_posts %}<a href="/result/{{ i }}">{{ i }}</a> {% endfor %}
+     </p>
+</body>
+</html>

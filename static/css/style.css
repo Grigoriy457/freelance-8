@@ -1,0 +1,156 @@
+html, body {
+    height: 100%;
+    background-image: linear-gradient(-105deg, #009acc, #363795);
+    color: rgb(147, 191, 236);
+    font-family: 'Quicksand', sans-serif;
+}
+
+.title {
+    padding: 60px 0;
+    font-size: 55px;
+    line-height: 48px;
+    font-weight: 400;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.subtitle {
+    margin: 9px 0;
+    font-size: 30px;
+}
+
+.subtitle input, .date-input {
+    height: 30px;
+    font-size: 20px;
+}
+
+.likes-input, .subscribers-input, .date-input {
+    width: 30px;
+}
+
+input, button.button {
+    outline: none;
+    background-color: #ffffff00;
+    border: none;
+    border: 1px solid #ffffff;
+    border-radius: 30px;
+    color: rgb(147, 191, 236);
+}
+
+button.button {
+    margin-top: 20px;
+    background-color: #ffffff2a;
+}
+
+input {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+button.button, .checkbox {
+    cursor: pointer;
+}
+
+.checkbox {
+    overflow: hidden;
+    position: relative;
+}
+
+ol {
+    list-style: none;
+    margin: 8px 0;
+    display: none;
+}
+
+li + li {
+    margin-top: 15px;
+}
+
+main.main {
+    margin-left: inherit;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+button.button {
+    width: 300px;
+    height: 30px;
+}
+
+section + section {
+    margin-top: 15px;
+}
+
+@media (max-width: 550px) {
+    main.main {
+        margin-left: inherit;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    section {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+.spinner {
+    animation: rotate 2s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -25px 0 0 -25px;
+    width: 50px;
+    height: 50px;
+}
+
+.path {
+    stroke: rgb(147, 191, 236);
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+  
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
+}
+
+.disactive {
+    display: none;
+}
+
+.active {
+    display: block;
+}
+
+.main.active {
+    display: flex;
+}
+
+.result_main {
+    width: 80%;
+    height: 90%;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 30px;
+    margin: 5% 10% 0;
+    padding: 30px 30px;
+    font-size: 25px;
+    color: rgb(191, 223, 255);
+}
