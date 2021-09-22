@@ -6,6 +6,9 @@ import sqlite3
 app = Flask(__name__)
 posts = list()
 
+connection = sqlite3.connect('db.db', check_same_thread=False)
+cursor = connection.cursor()
+
 @app.route('/', methods=['GET'])
 def home():
     return render_template('home.html')
@@ -83,9 +86,6 @@ def result():
     return redirect('/', code=302)
 
 if __name__ == '__main__':
-    connection = sqlite3.connect('db.db', check_same_thread=False)
-    cursor = connection.cursor()
-
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
     print('run')
     app.run(host='10.10.10.58', debug=False, port=5500)
