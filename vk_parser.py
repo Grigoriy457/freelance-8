@@ -1,13 +1,13 @@
 import requests
 import datetime
+from datetime import date
+from timeit import default_timer as timer
+import time
 import math
 import sys
 import os
 import re
 from rich.console import Console
-from timeit import default_timer as timer
-import time
-from datetime import date
 import sqlite3
 import csv
 import unicodedata
@@ -25,11 +25,11 @@ def strip_emoji(text):
             if replaced != '':
                 returnString += replaced
             else:
-                try:
-                     returnString += "[" + unicodedata.name(character) + "]"
-                except ValueError:
-                     returnString += "[x]"
-
+                # try:
+                #      returnString += "[" + unicodedata.name(character) + "]"
+                # except ValueError:
+                #      returnString += "[x]"
+                returnString += ' '
     return returnString
 
 class parser():
