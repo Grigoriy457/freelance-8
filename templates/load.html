@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow: hidden;">
+<head>
+     <meta charset="UTF-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>VK parser (loading ...)</title>
+
+     <link rel="stylesheet" href="static/css/style.css">
+     <link rel="icon" type="image/png" href="static/images/favicon.png"/>
+</head>
+<body>
+     <h2 class="subtitle">Remaining about <span style="color: rgb(64, 179, 255);">{{ time }}</span> seconds <span style="color: rgb(64, 179, 255);">({{ now_post }}/{{ all_post }})</span></h2>
+     <form action="/load" method="GET">
+          <p>
+               <button type="submit" class="button">Submit</button>
+          </p>
+     </form>
+</body>
+</html>
