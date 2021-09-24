@@ -7,7 +7,7 @@ import math
 import sys
 import os
 import re
-# from rich.console import Console
+from rich.console import Console
 import sqlite3
 import csv
 import unicodedata
