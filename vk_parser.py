@@ -7,7 +7,7 @@ import math
 import sys
 import os
 import re
-from rich.console import Console
+# from rich.console import Console
 import sqlite3
 import csv
 import unicodedata
@@ -138,11 +138,11 @@ class parser():
                         if response.json()['error']['error_msg'] == 'Too many requests per second':
                             continue
                         elif response.json()['error']['error_msg'] == 'User authorization failed: user is blocked.':
-                            self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]user is blocked.[/bold][/red]')
+#                             self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]user is blocked.[/bold][/red]')
                             self.access_tokens.pop(self.access_token_index)
                             continue
                         elif response.json()['error']['error_msg'] == 'User authorization failed: invalid access_token (4).':
-                            self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]invalid access_token.[/bold][/red]')
+#                             self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]invalid access_token.[/bold][/red]')
                             self.invalid_access_tokens.append(self.access_tokens[self.access_token_index])
                             self.access_tokens.pop(self.access_token_index)
                             continue
@@ -177,7 +177,7 @@ class parser():
             invalid_access_tokens_file.write('\n'.join(self.invalid_access_tokens))
 
         self.end = timer()
-        self.console.print('[cyan]Parsing from VK completed successfully (', round(self.end - self.start, 2), '[bold cyan]sec[/bold cyan] [cyan])!')
+#         self.console.print('[cyan]Parsing from VK completed successfully (', round(self.end - self.start, 2), '[bold cyan]sec[/bold cyan] [cyan])!')
         print()
 
         print(datetime.datetime.utcfromtimestamp(self.posts[-1]['date']))
@@ -192,129 +192,129 @@ class parser():
         # sys.exit()
         self.access_token_index = 0
 
-        with self.console.status("[bold green]Scaning data...") as self.status:
-            for j in self.posts:
-                self.start_time = timer()
+#         with self.console.status("[bold green]Scaning data...") as self.status:
+        for j in self.posts:
+            self.start_time = timer()
 
-                self.console.log(f"[yellow]Scaning post [bold]{self.index + 1}/{len(self.posts)}[/bold] complete[/yellow]")
-                self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (str(self.index + 1), 'parser_post'))
-                self.connection.commit()
-                self.index += 1
+#                 self.console.log(f"[yellow]Scaning post [bold]{self.index + 1}/{len(self.posts)}[/bold] complete[/yellow]")
+            self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (str(self.index + 1), 'parser_post'))
+            self.connection.commit()
+            self.index += 1
 
-                if j['post_type'] != 'post':
+            if j['post_type'] != 'post':
+                continue
+
+            self.text = j['text']
+
+            self.date = j['date']
+
+            self.likes = j['likes']['count']
+
+            self.reposts = j['reposts']['count']
+
+            self._id = int(j['owner_id'])
+            if self._id < 0:
+                while True:
+                    time.sleep(0.1)
+                    response = requests.get(f'http://api.vk.com/method/groups.getById?group_id={abs(self._id)}&fields=members_count&access_token={self.access_tokens[self.access_token_index]}&v={self.v}').json()
+                    try:
+                        self.subscribers = response['response'][0]['members_count']
+                        break
+                    except KeyError:
+                        if response['error']['error_msg'] == 'Too many requests per second':
+                            continue
+                        elif response['error']['error_msg'] == 'Rate limit reached':
+                            if self.access_token_index == len(self.access_tokens) - 1:
+                                self.access_token_index = 0
+                            else:
+                                self.access_token_index += 1
+                            continue
+                        else:
+                            print(response)
+                            break
+            else:
+                while True:
+                    time.sleep(0.1)
+                    response = requests.get(f'http://api.vk.com/method/users.getFollowers?access_token={self.access_tokens[self.access_token_index]}&v={self.v}&user_id={self._id}').json()
+                    try:
+                        self.subscribers = response['response']['count']
+                        break
+                    except KeyError:
+                        if response['error']['error_msg'] == 'Too many requests per second':
+                            continue
+                        else:
+                            print(response)
+                            break
+
+            self.check = [None, None, None, None, None]
+
+            if self.FILTERS['likes'][0]:
+                if self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '>=' and self.likes >= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2]:
+                    pass
+                else:
                     continue
 
-                self.text = j['text']
-
-                self.date = j['date']
-
-                self.likes = j['likes']['count']
-
-                self.reposts = j['reposts']['count']
-
-                self._id = int(j['owner_id'])
-                if self._id < 0:
-                    while True:
-                        time.sleep(0.1)
-                        response = requests.get(f'http://api.vk.com/method/groups.getById?group_id={abs(self._id)}&fields=members_count&access_token={self.access_tokens[self.access_token_index]}&v={self.v}').json()
-                        try:
-                            self.subscribers = response['response'][0]['members_count']
-                            break
-                        except KeyError:
-                            if response['error']['error_msg'] == 'Too many requests per second':
-                                continue
-                            elif response['error']['error_msg'] == 'Rate limit reached':
-                                if self.access_token_index == len(self.access_tokens) - 1:
-                                    self.access_token_index = 0
-                                else:
-                                    self.access_token_index += 1
-                                continue
-                            else:
-                                print(response)
-                                break
+            if self.FILTERS['subscribers'][0]:
+                if self.FILTERS['subscribers'][1] == '>' and self.subscribers > self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '>=' and self.subscribers >= self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '=' and self.subscribers == self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '<=' and self.subscribers <= self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '<' and self.ubscribers < self.FILTERS['subscribers'][2]:
+                    pass
                 else:
-                    while True:
-                        time.sleep(0.1)
-                        response = requests.get(f'http://api.vk.com/method/users.getFollowers?access_token={self.access_tokens[self.access_token_index]}&v={self.v}&user_id={self._id}').json()
-                        try:
-                            self.subscribers = response['response']['count']
-                            break
-                        except KeyError:
-                            if response['error']['error_msg'] == 'Too many requests per second':
-                                continue
-                            else:
-                                print(response)
-                                break
+                    continue
 
-                self.check = [None, None, None, None, None]
+            if self.FILTERS['stop_word'] != '':
+                if self.FILTERS['stop_word'].lower() in self.text.lower():
+                    continue
 
-                if self.FILTERS['likes'][0]:
-                    if self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '>=' and self.likes >= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2]:
-                        pass
-                    else:
-                        continue
+            if not (self.FILTERS['start_date'] == '' or self.FILTERS['stop_date'] == ''):
+                if self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']:
+                    pass
+                else:
+                    continue
 
-                if self.FILTERS['subscribers'][0]:
-                    if self.FILTERS['subscribers'][1] == '>' and self.subscribers > self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '>=' and self.subscribers >= self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '=' and self.subscribers == self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '<=' and self.subscribers <= self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '<' and self.ubscribers < self.FILTERS['subscribers'][2]:
-                        pass
-                    else:
-                        continue
-
-                if self.FILTERS['stop_word'] != '':
-                    if self.FILTERS['stop_word'].lower() in self.text.lower():
-                        continue
-
-                if not (self.FILTERS['start_date'] == '' or self.FILTERS['stop_date'] == ''):
-                    if self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']:
-                        pass
-                    else:
-                        continue
-
-                # print(j)
-                img_or_video = list()
+            # print(j)
+            img_or_video = list()
+            try:
+                for i in j['attachments']:
+                    img_or_video.append(i['photo']['sizes'][2]['url'])
+            except KeyError:
                 try:
                     for i in j['attachments']:
-                        img_or_video.append(i['photo']['sizes'][2]['url'])
+                        img_or_video.append(i['video']['image'][2]['url'])
                 except KeyError:
-                    try:
-                        for i in j['attachments']:
-                            img_or_video.append(i['video']['image'][2]['url'])
-                    except KeyError:
-                        pass
+                    pass
 
-                post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), int(self.subscribers), strip_emoji(self.text), img_or_video, int(self._index + 1)]
-                # print(post)
-                self.cursor.execute("""INSERT INTO posts (url, date, likes, reposts, subscribers, text, img_or_video, [index]) VALUES (?, ?, ?, ?, ?, ?, ?, ?);""", (post[0], post[1], post[2], post[3], post[4], post[5], str(post[6]), post[7]))
-                self.connection.commit()
-                self.sorted_posts.append(post)
+            post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), int(self.subscribers), strip_emoji(self.text), img_or_video, int(self._index + 1)]
+            # print(post)
+            self.cursor.execute("""INSERT INTO posts (url, date, likes, reposts, subscribers, text, img_or_video, [index]) VALUES (?, ?, ?, ?, ?, ?, ?, ?);""", (post[0], post[1], post[2], post[3], post[4], post[5], str(post[6]), post[7]))
+            self.connection.commit()
+            self.sorted_posts.append(post)
 
-                self.console.print(f'\n[bold white]Text:[/bold white] [white]{strip_emoji(self.text)}[/white]')
-                # console.print(f'[bold blue]Date:[/bold blue] [blue]{date}[/blue]')
-                # console.print(f'[bold red]Likes:[/bold red] [red]{likes}[/red]', end=', ')
-                # console.print(f'[bold green]Reposts:[/bold green] [green]{reposts}[/green]', end=', ')
-                # console.print(f'[bold yellow]Subscribers:[/bold yellow] [yellow]{subscribers}[/yellow]')
-                # print()
-                # print()
+#             self.console.print(f'\n[bold white]Text:[/bold white] [white]{strip_emoji(self.text)}[/white]')
+            # console.print(f'[bold blue]Date:[/bold blue] [blue]{date}[/blue]')
+            # console.print(f'[bold red]Likes:[/bold red] [red]{likes}[/red]', end=', ')
+            # console.print(f'[bold green]Reposts:[/bold green] [green]{reposts}[/green]', end=', ')
+            # console.print(f'[bold yellow]Subscribers:[/bold yellow] [yellow]{subscribers}[/yellow]')
+            # print()
+            # print()
 
-                self._index += 1
+            self._index += 1
 
-                self.end = timer()
+            self.end = timer()
 
-                self.all_timers.append(self.end - self.start_time)
+            self.all_timers.append(self.end - self.start_time)
 
-                self.primernoe_time = (sum(self.all_timers) / len(self.all_timers)) * self.LIMIT
-                self.timer = self.primernoe_time - (self.end - self.start)
+            self.primernoe_time = (sum(self.all_timers) / len(self.all_timers)) * self.LIMIT
+            self.timer = self.primernoe_time - (self.end - self.start)
 
-                print('≈' + str(round(self.timer, 2)))
+            print('≈' + str(round(self.timer, 2)))
 
-                self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (str(round(self.timer, 2)), 'parser_time'))
-                self.connection.commit()
+            self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (str(round(self.timer, 2)), 'parser_time'))
+            self.connection.commit()
 
         print()
-        self.console.print('[cyan]Parsing from VK completed successfully (', round(self.end - self.start, 2), '[bold cyan]sec[/bold cyan] [cyan])!')
+#         self.console.print('[cyan]Parsing from VK completed successfully (', round(self.end - self.start, 2), '[bold cyan]sec[/bold cyan] [cyan])!')
         print()
 
-        self.console.print('[bold green]All posts:', len(self.sorted_posts))
+#         self.console.print('[bold green]All posts:', len(self.sorted_posts))
 
         self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (0, 'parser_status'))
         self.connection.commit()
