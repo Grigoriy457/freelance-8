@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" style="overflow-x: hidden;">
+<html lang="en" style="overflow-x: hidden; user-select: none;">
 <head>
-	<meta charset="utf-8">
+	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<title>VK parser</title>
@@ -46,7 +46,7 @@
 
             <section class="limit">
                 <h2 class="subtitle">Limit: <input type="number" name="limit-input" id="limit-input" class="limit-input" autocomplete="off" required></h2>
-                <ol style="display: block;"><li style="font-size: 16px; margin-top: 6px;">* If date = false then limit <= <span style="color: rgb(0 212 255);">1000</span></li></ol>
+                <!-- <ol style="display: block;"><li style="font-size: 16px; margin-top: 6px;">* If date = false then limit <= <span style="color: rgb(0 212 255);">1000</span></li></ol> -->
             </section>
 
             <section class="likes">
@@ -80,7 +80,7 @@
                         </select>
                     </li>
                     <li>
-                        Count: <input type="number" name="subscribers-input__count" autocomplete="off">
+                        Count: <input type="number" name="subscribers-input__count" id="subscribers-input" autocomplete="off">
                     </li>
                 </ol>
             </section>
@@ -97,10 +97,10 @@
                 <label><h2 class="subtitle">Date: <input class="date-checkbox checkbox" name="date-input" type="checkbox" id="date_checkBox" onclick="clickFunction()" autocomplete="off"></h2></label>
                 <ol class="date_ul" id="date_ul">
                     <li>
-                        Start time: <input type="date" name="start_time" id="date-input__start" autocomplete="off">
+                        Start time: <input type="date" name="start_time" id="date-input_1" autocomplete="off">
                     </li>
                     <li>
-                        Stop time: <input type="date" name="end_time" autocomplete="off">
+                        Stop time: <input type="date" name="end_time" id="date-input_2" autocomplete="off">
                     </li>
                     <li style="font-size: 13px; margin-top: 6px;">
                         * (stop time > start time)
@@ -109,7 +109,7 @@
             </section>
 
             <section class="button">
-                <button type="submit" class="button" onclick="show_load()">Submit</button>
+                <button type="submit" class="button" onclick="check_invalid_str()">Submit</button>
             </section>
         </form>
     </main>

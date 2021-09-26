@@ -20,7 +20,37 @@ def home():
 
 @app.route('/change_password', methods=['GET'])
 def change_password():
-    return '<html style="background-image: linear-gradient(-105deg, #009acc, #363795);"><h1 style="color: rgb(0 212 255);">change_password</h1></html>'
+    return render_template('change_password.html', error=error)
+
+@app.route('/set_new_password', methods=['GET', 'POST'])
+def set_new_password():
+    global error
+    error = ''
+    if request.method == 'POST':
+        user_id = request.form.get('id-input', '')
+        old_password = request.form.get('old_password-input', '')
+        new_password = request.form.get('new_password-input', '')
+        repeat_new_password = request.form.get('repeat_new_password-input', '')
+
+        user_info = cursor.execute("""SELECT * FROM "users" WHERE "user_id"='{}';""".format(user_id)).fetchone()
+        if bool(user_info):
+            if user_info[1] != old_password:
+                error = 'Wrong password'
+                return redirect('/change_password', code=302)
+            else:
+                if new_password != repeat_new_password:
+                    error = 'Password mismatch'
+                    return redirect('/change_password', code=302)
+                else:
+                    error = ''
+                    cursor.execute("""UPDATE "users" SET "password"=? WHERE "user_id"=?;""", (new_password, user_id))
+                    connection.commit()
+                    return redirect('/', code=302)
+        else:
+            error = 'Wrong username'
+            return redirect('/change_password', code=302)
+    else:
+        return redirect('/', code=302)
 
 def get_all_posts():
     global cursor, posts, user_id
