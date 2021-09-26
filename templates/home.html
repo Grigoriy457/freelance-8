@@ -25,14 +25,32 @@
 		</div>
 	</header>
     <main class="main active">
+        {% if error != '' %}
+            <div stule="color: red;" style="color: red;">[!] <b>{{ error }}</b></div>
+        {% endif %}
         <form action="/load" method="POST">
+            <section class="id">
+                <h2 class="subtitle">Id: <input type="number" name="id-input" class="id-input" id="id-input" autocomplete="off" required></h2>
+            </section>
+
+            <section class="password">
+                <h2 class="subtitle">password: <input type="password" name="password-input" class="password-input" autocomplete="off" id="password-input" required></h2>
+                <ol style="display: block;">
+                    <label><input type="checkbox" class="password-checkbox" id="password-checkbox" onclick="hide_show_password()"> Show password</label>
+                    <li style="font-size: 16px; margin-top: 12px;">* If you wont to change your password, then <a style="color: rgb(0 212 255);" href="/change_password">click on me</a></li>
+                </ol>
+            </section>
+
+            <br>
+            <br>
+
             <section class="limit">
-                <h2 class="subtitle">Limit: <input type="number" name="limit-input" class="limit-input" autocomplete="off"></h2>
+                <h2 class="subtitle">Limit: <input type="number" name="limit-input" id="limit-input" class="limit-input" autocomplete="off" required></h2>
                 <ol style="display: block;"><li style="font-size: 16px; margin-top: 6px;">* If date = false then limit <= <span style="color: rgb(0 212 255);">1000</span></li></ol>
             </section>
 
             <section class="likes">
-                <h2 class="subtitle">Likes: <input class="likes-input checkbox" name="likes-input" type="checkbox" id="likes_checkbox" onclick="clickFunction()" autocomplete="off"></h2>
+                <label><h2 class="subtitle">Likes: <input class="likes-checkbox checkbox" name="likes-input" type="checkbox" id="likes_checkbox" onclick="clickFunction()" autocomplete="off"></h2></label>
                 <ol class="likes_ul" id="likes_ul">
                     <li>
                         <select name="likes_select">
@@ -44,13 +62,13 @@
                         </select>
                     </li>
                     <li>
-                        Count: <input type="number" name="likes-input__count" autocomplete="off">
+                        Count: <input type="number" name="likes-input__count" id="likes-input" autocomplete="off">
                     </li>
                 </ol>
             </section>
 
             <section class="subscribers">
-                <h2 class="subtitle">Subscribers: <input class="subscribers-input checkbox" name="subscribers-input" type="checkbox" id="subscribers_checkbox" onclick="clickFunction()" autocomplete="off"></h2>
+                <label><h2 class="subtitle">Subscribers: <input class="subscribers-checkbox checkbox" name="subscribers-input" type="checkbox" id="subscribers_checkbox" onclick="clickFunction()" autocomplete="off"></h2></label>
                 <ol class="subscribers_ul" id="subscribers_ul">
                     <li>
                         <select name="subscribers_select">
@@ -68,7 +86,7 @@
             </section>
 
             <section class="key_word">
-                <h2 class="subtitle">Key word: <input class="key_word-input" name="key_word-input" type="text" id="key_word_checkbox" autocomplete="off"></h2>
+                <h2 class="subtitle">Key word: <input class="key_word-input" name="key_word-input" type="text" id="key_word-input" autocomplete="off" required></h2>
             </section>
 
             <section class="stop_word">
@@ -76,10 +94,10 @@
             </section>
 
             <section class="date">
-                <h2 class="subtitle">Date: <input class="date-input checkbox" name="date-input" type="checkbox" id="date_checkBox" onclick="clickFunction()" autocomplete="off"></h2>
+                <label><h2 class="subtitle">Date: <input class="date-checkbox checkbox" name="date-input" type="checkbox" id="date_checkBox" onclick="clickFunction()" autocomplete="off"></h2></label>
                 <ol class="date_ul" id="date_ul">
                     <li>
-                        Start time: <input type="date" name="start_time" autocomplete="off">
+                        Start time: <input type="date" name="start_time" id="date-input__start" autocomplete="off">
                     </li>
                     <li>
                         Stop time: <input type="date" name="end_time" autocomplete="off">
@@ -91,7 +109,7 @@
             </section>
 
             <section class="button">
-                <button type="submit" class="button" onclick="toggleFunction()">Submit</button>
+                <button type="submit" class="button" onclick="show_load()">Submit</button>
             </section>
         </form>
     </main>

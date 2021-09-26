@@ -24,7 +24,7 @@ html, body {
     font-size: 20px;
 }
 
-.likes-input, .subscribers-input, .date-input {
+.likes-checkbox, .subscribers-checkbox, .date-checkbox {
     width: 30px;
 }
 
