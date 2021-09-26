@@ -141,5 +141,6 @@ def result():
 if __name__ == '__main__':
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
     print('run')
-    app.run(host='10.10.10.58', debug=False, port=5500)
+    app.run(host='0.0.0.0')
+    # app.run(host='10.10.10.58', debug=False, port=5500)
     # app.run(host='localhost', debug=False, port=5500)
