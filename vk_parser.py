@@ -72,10 +72,10 @@ class parser():
         self.cursor.execute("""INSERT INTO "params" ("info", "status") VALUES ('parser_time', '...');""")
         self.connection.commit()
 
-        print("SQLite подключена")
+        print("SQLite connected")
 
         # except sqlite3.Error as error:
-        #     print("Ошибка при подключении к sqlite\n" + str(error))
+        #     print("Error connecting to sqlite\n" + str(error))
         #     return None
 
         with open('access_tokens.txt', 'r') as access_tokens_file:
@@ -327,7 +327,7 @@ class parser():
         if (self.connection):
             self.cursor.close()
             self.connection.close()
-            print("Соединение с SQLite закрыто")
+            print("SQLite connection closed")
 
         with open("static/posts.csv", "w", newline='') as csvfile:
             filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
