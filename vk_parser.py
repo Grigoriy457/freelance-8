@@ -80,7 +80,7 @@ class parser():
 
         with open('access_tokens.txt', 'r') as access_tokens_file:
             self.access_tokens = access_tokens_file.read().split('\n')
-        
+
         self.access_token_index = 0
         self.console = Console()
         self.start_from = 0
