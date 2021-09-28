@@ -5,11 +5,15 @@ html, body {
     font-family: 'Quicksand', sans-serif;
 }
 
-.title {
-    padding: 60px 0;
+h1.title {
+    color: rgb(147, 191, 236);
     font-size: 55px;
     line-height: 48px;
-    font-weight: 400;
+    font-weight: 100;
+}
+
+div.title {
+    padding: 60px 0;
     display: flex;
     justify-content: space-evenly;
 }
@@ -24,7 +28,7 @@ html, body {
     font-size: 20px;
 }
 
-.likes-checkbox, .subscribers-checkbox, .date-checkbox {
+.likes-checkbox, .subscribers-checkbox, .date-checkbox, .verified-checkbox {
     width: 30px;
 }
 

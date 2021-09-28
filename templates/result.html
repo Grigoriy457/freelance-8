@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="user-select: none;">
+<html lang="en">
 <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,54 +8,61 @@
      <link rel="icon" type="image/png" href="/static/images/favicon.png"/>
 </head>
 <body>
-     <h2>Page: {{ page }}</h2>
-     <div style="margin: 16px 0 0;">
-          <a href="/static/posts.csv" download="posts.csv" style="display: flex;">
-               <img src="/static/images/excel.png" alt="excel icon" style="width: 48px; height: 48px;">
-               <p>Download csv file</p>
-          </a>
-     </div>
-     <h3>
-          All pages: {% for i in range_posts %}<a class="page" href="/result/{{ i }}">{{ i }}</a> {% endfor %}
-     </h3>
-     <h3>
-          All posts: {{ len_posts }}
-     </h3>
-     <p>
-          {% for i in posts[((page - 1) * 1000):(page * 1000)] %}
-               <fieldset>
-                    <legend>Post index: {{ i[7] }}</legend>
+     <header class="header"><div class="container"><div class="header__inner"><h1 class="title"><a href="/" style="text-decoration: none;">VK parser</a> (result)</h1></div></div></header>
+     <main>
+          <h2>Page: {{ page }}</h2>
+          <div style="margin: 16px 0 0;">
+               <a href="/static/posts.csv" download="posts.csv" style="display: flex;">
+                    <img src="/static/images/excel.png" alt="excel icon" style="width: 48px; height: 48px;">
+                    <p>Download csv file</p>
+               </a>
+          </div>
+          <h3>
+               All pages: {% for i in range_posts %}<a class="page" href="/result/{{ i }}">{{ i }}</a> {% endfor %}
+          </h3>
+          <h3>
+               All posts: {{ len_posts }}
+          </h3>
+          <p>
+               {% for i in posts[((page - 1) * 1000):(page * 1000)] %}
+                    <fieldset>
+                         <legend>Post index: {{ i[8] }}</legend>
 
-                    <b style="color: rgb(41 129 219);">Url:</b> <a href="{{ i[0] }}" target="_blank">{{ i[0] }}</a>
+                         <b style="color: rgb(41 129 219);">Url:</b> <a href="{{ i[0] }}" target="_blank">{{ i[0] }}</a>
 
+                         <br>
+
+                         <b style="color: rgb(41 129 219);">Title: </b> {{ i[1] }}
+
+                         <br>
+
+                         <b style="color: rgb(41 129 219);">Date:</b> {{ i[2] }}
+
+                         <br>
+
+                         <b style="color: rgb(41 129 219);">Likes:</b> {{ i[3] }}; <b style="color: rgb(41 129 219);">Reposts:</b> {{ i[4] }}; <b style="color: rgb(41 129 219);">Subsribers:</b> {{ i[5] }}
+
+                         <br>
+
+                         {% if i[6] != '' %}
+                              <b style="color: rgb(41 129 219);">Text:</b> {{ i[6] }}<br>
+                         {% endif %}
+
+                         {% if i[7] != [] %}
+                              <b style="color: rgb(41 129 219);">Img:</b>
+                              {% for j in i[7] %}
+                                   <img src="{{ j }}" alt="{{ j }}">
+                              {% endfor %}
+                         {% endif %}
+                    </fieldset>
                     <br>
-
-                    <b style="color: rgb(41 129 219);">Date:</b> {{ i[1] }}
-
                     <br>
-
-                    <b style="color: rgb(41 129 219);">Likes:</b> {{ i[2] }}; <b style="color: rgb(41 129 219);">Reposts:</b> {{ i[3] }}; <b style="color: rgb(41 129 219);">Subsribers:</b> {{ i[4] }}
-
-                    <br>
-
-                    {% if i[5] != '' %}
-                         <b style="color: rgb(41 129 219);">Text:</b> {{ i[5] }}<br>
-                    {% endif %}
-
-                    {% if i[6] != [] %}
-                         <b style="color: rgb(41 129 219);">Img:</b>
-                         {% for j in i[6] %}
-                              <img src="{{ j }}" alt="{{ j }}">
-                         {% endfor %}
-                    {% endif %}
-               </fieldset>
-               <br>
-               <br>
-          {% endfor %}
-     </p>
-     <p>
-          All pages: {% for i in range_posts %}<a href="/result/{{ i }}">{{ i }}</a> {% endfor %}
-     </p>
+               {% endfor %}
+          </p>
+          <p>
+               All pages: {% for i in range_posts %}<a class="page" href="/result/{{ i }}">{{ i }}</a> {% endfor %}
+          </p>
+     </main>
 </body>
 <style type="text/css">
      a.page {

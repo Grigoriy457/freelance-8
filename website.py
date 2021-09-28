@@ -58,14 +58,14 @@ def get_all_posts():
     _posts = list()
     list_img = list()
     for i in posts:
-        list_img = i[6].split(', ')
+        list_img = i[7].split(', ')
         list_img[0] = list_img[0][1:]
         list_img[-1] = list_img[-1][:-1]
         for j in range(len(list_img )):
             list_img[j] = list_img[j][1:-1]
         if list_img == ['']:
             list_img = list()
-        _posts.append((i[0], i[1], i[2], i[3], i[4], i[5], list_img, i[7]))
+        _posts.append((i[0], i[1], i[2], i[3], i[4], i[5], i[6], list_img, i[8]))
     return _posts
 
 @app.route('/load', methods=['GET', "POST"])
@@ -96,9 +96,10 @@ def load():
             subscribers = [(True if request.form.get('subscribers-input', 'off') == 'on' else False), request.form.get('subscribers_select', ''), int(request.form.get('subscribers-input__count', ''))]
         except ValueError:
             subscribers = [False, '=', 0]
+        verified = True if request.form.get('verified-checkbox', '') == 'on' else False
         key_word = request.form.get('key_word-input', '')
         stop_word = request.form.get('stop_word-input', '')
-        bool_time = True if request.form.get('date-input', 'off') == 'on' else False
+        bool_time = True if request.form.get('date-input', '') == 'on' else False
         start_time = request.form.get('start_time', '')
         end_time = request.form.get('end_time', '')
         if key_word != '' and limit != 0:
@@ -106,11 +107,11 @@ def load():
                 if end_time == '' or start_time == '' or end_time == start_time:
                     return redirect('/', code=302)
             if status == 'new_console':
-                starter(user_id=user_id, limit=limit, likes=likes, subscribers=subscribers, key_word=key_word, stop_word=stop_word, start_date=start_time, stop_date=end_time).starter_function()
+                starter(user_id=user_id, limit=limit, likes=likes, subscribers=subscribers, verified=verified, key_word=key_word, stop_word=stop_word, start_date=start_time, stop_date=end_time).starter_function()
                 time.sleep(2)
                 return render_template('load.html', time='...', now_post='...', all_post='...')
             elif status == 'one_console':
-                parser(user_id=user_id, limit=limit, likes=likes, subscribers=subscribers, key_word=key_word, stop_word=stop_word, start_date=start_time, stop_date=end_time).parser_function()
+                parser(user_id=user_id, limit=limit, likes=likes, subscribers=subscribers, verified=verified, key_word=key_word, stop_word=stop_word, start_date=start_time, stop_date=end_time).parser_function()
                 _posts = get_all_posts()
                 return redirect('/result/1', code=302)
         else:

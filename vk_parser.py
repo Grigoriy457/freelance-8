@@ -12,6 +12,7 @@ import sqlite3
 import csv
 import unicodedata
 from unidecode import unidecode
+from transliterate import translit
 
 def strip_emoji(text):
     returnString = ""
@@ -33,9 +34,10 @@ def strip_emoji(text):
     return returnString
 
 class parser():
-    def __init__(self, user_id=None, limit=None, likes=None, subscribers=None, key_word=None, stop_word=None, start_date=None, stop_date=None):
+    def __init__(self, user_id=None, limit=None, likes=None, subscribers=None, verified=None, key_word=None, stop_word=None, start_date=None, stop_date=None):
         create_table_1 = """CREATE TABLE IF NOT EXISTS "{}" (
                             url          VARCHAR (255)  NOT NULL,
+                            title        VARCHAR (255)  NOT NULL,
                             date         VARCHAR (255)  NOT NULL,
                             likes        INTEGER        NOT NULL,
                             reposts      INTEGER        NOT NULL,
@@ -95,8 +97,8 @@ class parser():
         else:
             start_date = ''
             stop_date = ''
-        self.FILTERS = {'likes': [likes[0], likes[1], int(likes[2])], 'subscribers': [subscribers[0], subscribers[1], int(subscribers[2])], 'key_word': key_word, 'stop_word': stop_word, 'start_date': start_date, 'stop_date': stop_date}
-        self.LIMIT = limit
+        self.FILTERS = {'likes': [likes[0], likes[1], int(likes[2])], 'subscribers': [subscribers[0], subscribers[1], int(subscribers[2])], 'verified': verified, 'key_word': key_word, 'stop_word': stop_word, 'start_date': start_date, 'stop_date': stop_date}
+        self.LIMIT = int(limit)
         self.posts = list()
         self.sorted_posts = list()
         self.all_timers = list()
@@ -125,9 +127,9 @@ class parser():
 
                     try:
                         if self.FILTERS['start_date'] != '':
-                            response = requests.get(f"https://api.vk.com/method/newsfeed.search?access_token={self.access_tokens[self.access_token_index]}&q={self.FILTERS['key_word']}&end_time={self.end_date}&start_time={self.FILTERS['start_date']}&count=200&v=5.131")
+                            response = requests.get(f"https://api.vk.com/method/newsfeed.search?lang=ru&access_token={self.access_tokens[self.access_token_index]}&q={self.FILTERS['key_word']}&end_time={self.end_date}&start_time={self.FILTERS['start_date']}&count=200&v=5.131")
                         else:
-                            response = requests.get(f"https://api.vk.com/method/newsfeed.search?access_token={self.access_tokens[self.access_token_index]}&q={self.FILTERS['key_word']}&end_time={self.end_date}&start_time=1136073600&count=200&v=5.131")
+                            response = requests.get(f"https://api.vk.com/method/newsfeed.search?lang=ru&access_token={self.access_tokens[self.access_token_index]}&q={self.FILTERS['key_word']}&end_time={self.end_date}&start_time=1136073600&count=200&v=5.131")
                     except IndexError:
                         print('Index error')
                         self.access_token_index = 0
@@ -221,9 +223,11 @@ class parser():
                 if self._id < 0:
                     while True:
                         time.sleep(0.1)
-                        response = requests.get(f'http://api.vk.com/method/groups.getById?group_id={abs(self._id)}&fields=members_count&access_token={self.access_tokens[self.access_token_index]}&v={self.v}').json()
+                        response = requests.get(f'http://api.vk.com/method/groups.getById?lang=ru&group_id={abs(self._id)}&fields=members_count,verified&access_token={self.access_tokens[self.access_token_index]}&v={self.v}').json()
                         try:
                             self.subscribers = response['response'][0]['members_count']
+                            self.verified = response['response'][0]['verified']
+                            self.title = response['response'][0]['name']
                             break
                         except KeyError:
                             if response['error']['error_msg'] == 'Too many requests per second':
@@ -240,9 +244,11 @@ class parser():
                 else:
                     while True:
                         time.sleep(0.1)
-                        response = requests.get(f'http://api.vk.com/method/users.getFollowers?access_token={self.access_tokens[self.access_token_index]}&v={self.v}&user_id={self._id}').json()
+                        response = requests.get(f'http://api.vk.com/method/users.get?lang=ru&fields=followers_count,verified&access_token={self.access_tokens[self.access_token_index]}&v={self.v}&user_ids={self._id}').json()
                         try:
-                            self.subscribers = response['response']['count']
+                            self.subscribers = response['response'][0]['followers_count']
+                            self.verified = response['response'][0]['verified']
+                            self.title = response['response'][0]['first_name'] + response['response'][0]['last_name']
                             break
                         except KeyError:
                             if response['error']['error_msg'] == 'Too many requests per second':
@@ -251,7 +257,6 @@ class parser():
                                 print(response)
                                 break
 
-                self.check = [None, None, None, None, None]
 
                 if self.FILTERS['likes'][0]:
                     if self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '>=' and self.likes >= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2]:
@@ -275,6 +280,12 @@ class parser():
                     else:
                         continue
 
+                if self.FILTERS['verified']:
+                    if self.verified == 1:
+                        pass
+                    else:
+                        continue
+
                 # print(j)
                 img_or_video = list()
                 try:
@@ -287,9 +298,16 @@ class parser():
                     except KeyError:
                         pass
 
-                post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), int(self.subscribers), strip_emoji(self.text), img_or_video, int(self._index + 1)]
+                post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), int(self.subscribers), translit(strip_emoji(self.text), 'ru'), img_or_video, int(self._index + 1), self.title]
                 # print(post)
-                self.cursor.execute("""INSERT INTO "{}" (url, date, likes, reposts, subscribers, text, img_or_video, [index]) VALUES (?, ?, ?, ?, ?, ?, ?, ?);""".format(self.user_id), (post[0], post[1], post[2], post[3], post[4], post[5], str(post[6]), post[7]))
+                text = ''
+                for j in post[5]:
+                    if j == 'Ь':
+                        text += j.lower()
+                    else:
+                        text += j
+                post[5] = text
+                self.cursor.execute("""INSERT INTO "{}" (url, title, date, likes, reposts, subscribers, text, img_or_video, [index]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);""".format(self.user_id), (post[0], post[8], post[1], post[2], post[3], post[4], post[5], str(post[6]), post[7]))
                 self.connection.commit()
                 self.sorted_posts.append(post)
 
@@ -331,18 +349,18 @@ class parser():
 
         with open("static/posts.csv", "w", newline='') as csvfile:
             filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            filewriter.writerow(['url', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
+            filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
             for i in self.sorted_posts:
                 i[5] = i[5].replace('\n', ' ')
-                filewriter.writerow(i)
+                filewriter.writerow([i[0], i[8]] + i[1:8])
 
         return (self.user_id, self.sorted_posts)
 
 
 class starter():
-    def __init__(self, user_id=None, limit=None, likes=None, subscribers=None, key_word=None, stop_word=None, start_date=None, stop_date=None):
+    def __init__(self, user_id=None, limit=None, likes=None, subscribers=None, verified=None, key_word=None, stop_word=None, start_date=None, stop_date=None):
         with open('settings.txt', 'w') as settings_file:
-            settings_file.write(f'{user_id}\n{likes}\n{subscribers}\n{key_word}\n{stop_word}\n{start_date}\n{stop_date}\n{limit}')
+            settings_file.write(f'{user_id}\n{likes}\n{subscribers}\n{verified}\n{key_word}\n{stop_word}\n{start_date}\n{stop_date}\n{limit}')
 
     def starter_function(self):
         os.system('start open_vk_parser.py')
