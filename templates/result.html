@@ -1,38 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="font-family: 'Quicksand', sans-serif;">
 <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <title>VK parser (result)</title>
-     <!-- <link rel="stylesheet" href="/static/css/style.css"> -->
+
      <link rel="icon" type="image/png" href="/static/images/favicon.png"/>
+
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
 </head>
 <body>
-     <header class="header"><div class="container"><div class="header__inner"><h1 class="title"><a href="/" style="text-decoration: none;">VK parser</a> (result)</h1></div></div></header>
+     <header class="header">
+          <div class="container">
+               <div class="header__inner">
+                    <h1 class="title">
+                         <a href="/" style="text-decoration: none; color: rgb(147, 191, 236);">VK parser</a> (result)
+                    </h1>
+               </div>
+          </div>
+     </header>
      <main>
-          <h2>Page: {{ page }}</h2>
+          <h1><b style="color: rgb(41 129 219);">Page</b>: {{ page }}</h1>
+          <h1>
+               <b style="color: rgb(41 129 219);">All pages</b>: {% for i in range_posts %}<a class="page" href="/result/{{ i }}">{{ i }}</a> {% endfor %}
+          </h1>
+          <h1>
+               <b style="color: rgb(41 129 219);">All posts</b>: {{ len_posts }}
+          </h1>
+          <h1>
+               <b style="color: rgb(41 129 219);">Filters</b>:
+               <ul style="list-style: none; font-size: 21px; margin-top: auto;">
+                    {% for i in list_filters %}
+                         <li><b style="color: rgb(41 129 219);">{{ i[0] }}</b>: {{ i[1] }}</li>
+                    {% endfor %}
+               </ul>
+          </h1>
           <div style="margin: 16px 0 0;">
                <a href="/static/posts.csv" download="posts.csv" style="display: flex;">
                     <img src="/static/images/excel.png" alt="excel icon" style="width: 48px; height: 48px;">
                     <p>Download csv file</p>
                </a>
           </div>
-          <h3>
-               All pages: {% for i in range_posts %}<a class="page" href="/result/{{ i }}">{{ i }}</a> {% endfor %}
-          </h3>
-          <h3>
-               All posts: {{ len_posts }}
-          </h3>
           <p>
                {% for i in posts[((page - 1) * 1000):(page * 1000)] %}
                     <fieldset>
                          <legend>Post index: {{ i[8] }}</legend>
 
-                         <b style="color: rgb(41 129 219);">Url:</b> <a href="{{ i[0] }}" target="_blank">{{ i[0] }}</a>
-
-                         <br>
-
-                         <b style="color: rgb(41 129 219);">Title: </b> {{ i[1] }}
+                         <b style="color: rgb(41 129 219);">Title: </b> <a href="{{ i[0] }}" target="_blank" style="font-family: none;">{{ i[1] }}</a>
 
                          <br>
 
@@ -45,7 +61,7 @@
                          <br>
 
                          {% if i[6] != '' %}
-                              <b style="color: rgb(41 129 219);">Text:</b> {{ i[6] }}<br>
+                              <b style="color: rgb(41 129 219);">Text:</b> <span style="font-family: none;">{{ i[6] }}</span><br>
                          {% endif %}
 
                          {% if i[7] != [] %}
@@ -67,16 +83,27 @@
 <style type="text/css">
      a.page {
           display: inline-block;
-          width: 20px;
-          height: 20px;
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
           color: rgb(0 126 255);
           background-color: rgb(0 126 255 / 54%);
           text-align: center;
           font-weight: bold;
           vertical-align: middle;
-          line-height: 20px;
+          line-height: 28px;
           text-decoration: none;
+     }
+
+     h1 {
+          font-size: 29px;
+     }
+
+     h1.title {
+          color: rgb(147, 191, 236);
+          font-size: 55px;
+          line-height: 48px;
+          font-weight: 100;
      }
 </style>
 </html>

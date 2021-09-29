@@ -24,7 +24,7 @@
 			</div>
 		</div>
 	</header>
-    <main class="main active">
+    <main class="main_main active">
         {% if error != '' %}
             <div stule="color: red;" style="color: red;">[!] <b>{{ error }}</b></div>
         {% endif %}
@@ -94,7 +94,7 @@
             </section>
 
             <section class="stop_word">
-                <h2 class="subtitle">Stop word: <input class="stop_word-input" name="stop_word-input" type="text" id="stop_word_checkbox" autocomplete="off"></h2>
+                <h2 class="subtitle">Pass word: <input class="stop_word-input" name="stop_word-input" type="text" id="stop_word_checkbox" autocomplete="off"></h2>
             </section>
 
             <section class="date">
@@ -117,9 +117,17 @@
             </section>
         </form>
     </main>
-    <svg class="spinner disactive" viewBox="0 0 50 50">
-        <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-    </svg>
+    <main class="main_load disactive">
+        <div class="title">
+            <h1 class="title">
+                <a href="/" style="text-decoration: none; color: rgb(147, 191, 236);">VK parser</a>
+                <a href="/show_status_load" style="text-decoration: none; color: rgb(147, 191, 236);">(loading...)</a>
+            </h1>
+        </div>
+        <svg class="spinner" viewBox="0 0 50 50">
+            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+        </svg>
+    </main>
 </body>
 <script src="static/js/main.js"></script>
 </html>

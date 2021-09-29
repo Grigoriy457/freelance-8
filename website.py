@@ -13,6 +13,7 @@ connection = sqlite3.connect('db.db', check_same_thread=False)
 cursor = connection.cursor()
 
 error = ''
+list_filters = list()
 
 @app.route('/', methods=['GET'])
 def home():
@@ -68,9 +69,21 @@ def get_all_posts():
         _posts.append((i[0], i[1], i[2], i[3], i[4], i[5], i[6], list_img, i[8]))
     return _posts
 
-@app.route('/load', methods=['GET', "POST"])
+@app.route('/show_status_load', methods=['GET', 'POST'])
+def show_status_load():
+    cursor.execute("""SELECT status FROM params WHERE info = ?""", ('parser_status',))
+    if int(cursor.fetchone()[0]) == 1:
+        _time = cursor.execute("""SELECT status FROM params WHERE info = ?""", ('parser_time',)).fetchone()[0]
+        now_post = cursor.execute("""SELECT status FROM params WHERE info = ?""", ('parser_post',)).fetchone()[0]
+        all_post = cursor.execute("""SELECT status FROM params WHERE info = ?""", ('parser_all_posts',)).fetchone()[0]
+        return render_template('load.html', time=_time, now_post=now_post, all_post=all_post)
+    else:
+        _posts = get_all_posts()
+        return redirect('/result/1', code=302)
+
+@app.route('/load', methods=['GET', 'POST'])
 def load():
-    global _posts, cursor, connection, list_img, error, user_id
+    global _posts, cursor, connection, list_img, error, user_id, list_filters
     print('/load')
     # if 
     if request.method == 'POST':
@@ -102,6 +115,19 @@ def load():
         bool_time = True if request.form.get('date-input', '') == 'on' else False
         start_time = request.form.get('start_time', '')
         end_time = request.form.get('end_time', '')
+
+        list_filters.append(['Limit', limit])
+        if likes[0]:
+            list_filters.append(['Likes', (likes[1] + ' ' + str(likes[2]))])
+        if subscribers[0]:
+            list_filters.append(['Subscribers', (subscribers[1] + ' ' + str(subscribers[2]))])
+        list_filters.append(['Verified', verified])
+        list_filters.append(['Key word', key_word])
+        list_filters.append(['Pass word', stop_word])
+        if bool_time:
+            list_filters.append(['Start time', start_time])
+            list_filters.append(['End time', end_time])
+
         if key_word != '' and limit != 0:
             if bool_time:
                 if end_time == '' or start_time == '' or end_time == start_time:
@@ -117,21 +143,13 @@ def load():
         else:
             return redirect('/', code=302)
     else:
-        cursor.execute("""SELECT status FROM params WHERE info = ?""", ('parser_status',))
-        if int(cursor.fetchone()[0]) == 1:
-            _time = cursor.execute("""SELECT status FROM params WHERE info = ?""", ('parser_time',)).fetchone()[0]
-            now_post = cursor.execute("""SELECT status FROM params WHERE info = ?""", ('parser_post',)).fetchone()[0]
-            all_post = cursor.execute("""SELECT status FROM params WHERE info = ?""", ('parser_all_posts',)).fetchone()[0]
-            return render_template('load.html', time=_time, now_post=now_post, all_post=all_post)
-        else:
-            _posts = get_all_posts()
-            return redirect('/result/1', code=302)
+        return redirect('/show_status_load', code=302)
 
 @app.route('/result/<int:page>')
 def int_result(page):
-    global _posts
+    global _posts, list_filters
     if _posts != list() and _posts != None:
-        return render_template('result.html', posts=_posts, len_posts=len(_posts), page=page, range_posts=range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1))))
+        return render_template('result.html', posts=_posts, len_posts=len(_posts), page=page, range_posts=range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1))), list_filters=list_filters)
     else:
         return redirect('/', code=302)
 

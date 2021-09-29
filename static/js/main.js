@@ -38,8 +38,10 @@ function clickFunction() {
 }
 
 function show_load() {
-    document.querySelector('.main').classList.toggle('active');
-    document.querySelector('.main').classList.toggle('disactive');
+    document.querySelector('.main_main').classList.toggle('active');
+    document.querySelector('.main_main').classList.toggle('disactive');
+    document.querySelector('.main_load').classList.toggle('active');
+    document.querySelector('.main_load').classList.toggle('disactive');
     document.querySelector('.header').classList.toggle('active');
     document.querySelector('.header').classList.toggle('disactive');
     document.querySelector('svg').classList.toggle('active');

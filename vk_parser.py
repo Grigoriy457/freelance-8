@@ -352,7 +352,10 @@ class parser():
             filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
             for i in self.sorted_posts:
                 i[5] = i[5].replace('\n', ' ')
-                filewriter.writerow([i[0], i[8]] + i[1:8])
+                try:
+                    filewriter.writerow([i[0], i[8]] + i[1:8])
+                except UnicodeEncodeError:
+                    pass
 
         return (self.user_id, self.sorted_posts)
 
