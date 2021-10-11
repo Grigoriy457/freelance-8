@@ -24,7 +24,7 @@
      <main>
           <h1><b style="color: rgb(41 129 219);">Page</b>: {{ page }}</h1>
           <h1>
-               <b style="color: rgb(41 129 219);">All pages</b>: {% for i in range_posts %}<a class="page" href="/result/{{ i }}">{{ i }}</a> {% endfor %}
+               <b style="color: rgb(41 129 219);">All pages</b>: {% for i in range_posts %}<a class="page" href="/result/{{ i }}/{{ user_id }}">{{ i }}</a> {% endfor %}
           </h1>
           <h1>
                <b style="color: rgb(41 129 219);">All posts</b>: {{ len_posts }}
@@ -38,7 +38,7 @@
                </ul>
           </h1>
           <div style="margin: 16px 0 0;">
-               <a href="/static/posts.csv" download="posts.csv" style="display: flex;">
+               <a href="/static/users/{{ user_id }}/posts.csv" download="posts.csv" style="display: flex;">
                     <img src="/static/images/excel.png" alt="excel icon" style="width: 48px; height: 48px;">
                     <p>Download csv file</p>
                </a>

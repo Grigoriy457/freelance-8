@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
 
-	<link rel="stylesheet" href="static/css/style.css">
+	<link rel="stylesheet" href="/static/css/style.css">
 
-    <link rel="icon" type="image/png" href="static/images/favicon.png"/>
+    <link rel="icon" type="image/png" href="/static/images/favicon.png"/>
 </head>
 <body>
 	<header class="header active">
@@ -25,25 +25,11 @@
 		</div>
 	</header>
     <main class="main_main active">
-        {% if error != '' %}
+        <!-- {% if error != '' %}
             <div stule="color: red;" style="color: red;">[!] <b>{{ error }}</b></div>
-        {% endif %}
-        <form action="/load" method="POST">
-            <section class="id">
-                <h2 class="subtitle">Id: <input type="number" name="id-input" class="id-input" id="id-input" autocomplete="off" required></h2>
-            </section>
-
-            <section class="password">
-                <h2 class="subtitle">password: <input type="password" name="password-input" class="password-input" autocomplete="off" id="password-input" required></h2>
-                <ol style="display: block;">
-                    <label class="checkbox"><input type="checkbox" class="password-checkbox" id="password-checkbox" onclick="hide_show_password()"> Show password</label>
-                    <li style="font-size: 16px; margin-top: 12px;">* If you wont to change your password, then <a style="color: rgb(0 212 255); text-decoration: none;" href="/change_password">click on me</a></li>
-                </ol>
-            </section>
-
-            <br>
-            <br>
-
+        {% endif %} -->
+        <form action="/load">
+            <input type="text" name="user_id" class="user_id" style="display: none;" value="{{ user_id }}">
             <section class="limit">
                 <h2 class="subtitle">Limit: <input type="number" name="limit-input" id="limit-input" class="limit-input" autocomplete="off" required></h2>
                 <!-- <ol style="display: block;"><li style="font-size: 16px; margin-top: 6px;">* If date = false then limit <= <span style="color: rgb(0 212 255);">1000</span></li></ol> -->
@@ -86,7 +72,14 @@
             </section>
 
             <section class="verified">
-                <label class="checkbox"><h2 class="subtitle">Verified: <input class="verified-checkbox" name="verified-checkbox" type="checkbox" id="verified-checkbox" autocomplete="off"></h2></label>
+                <label class="checkbox">
+                    <h2 class="subtitle">Verified: 
+                        <select class="verified-select" name="verified-select" id="verified-select" autocomplete="off">
+                            <option value="Yes">Yes</option>
+                            <option value="No" selected>No</option>
+                        </select>
+                    </h2>
+                </label>
             </section>
 
             <section class="key_word">
@@ -98,6 +91,7 @@
             </section>
 
             <section class="date">
+                <input type="text" class="date-input" name="date-checkbox" id="date-input" value="NO" style="display: none;">
                 <label class="checkbox"><h2 class="subtitle">Date: <input class="date-checkbox" name="date-input" type="checkbox" id="date_checkBox" onclick="clickFunction()" autocomplete="off"></h2></label>
                 <ol class="date_ul" id="date_ul">
                     <li>
@@ -118,15 +112,18 @@
         </form>
     </main>
     <main class="main_load disactive">
-        <div class="title">
-            <h1 class="title">
-                <a href="/" style="text-decoration: none; color: rgb(147, 191, 236);">VK parser</a>
-                <a href="/show_status_load" style="text-decoration: none; color: rgb(147, 191, 236);">(loading...)</a>
-            </h1>
-        </div>
-        <svg class="spinner" viewBox="0 0 50 50">
-            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-        </svg>
+        <form action="/show_status_load/{{ user_id }}">
+            <!-- <input type="text" name="user_id" class="user_id" style="display: none;" value="{{ user_id }}"> -->
+            <div class="title">
+                <h1 class="title">
+                    <a href="/" style="text-decoration: none; color: rgb(147, 191, 236);">VK parser</a>
+                    <button type="submit" class="button_2" style="text-decoration: none; color: rgb(147, 191, 236);">(loading...)</button>
+                </h1>
+            </div>
+            <svg class="spinner" viewBox="0 0 50 50">
+                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+            </svg>
+        </form>
     </main>
 </body>
 <script src="static/js/main.js"></script>
