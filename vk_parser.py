@@ -48,12 +48,12 @@ class parser():
                         );"""
         create_table_2 = """CREATE TABLE IF NOT EXISTS params (
                             info VARCHAR (255),
-                            status VARCHAR (255)
+                            status VARCHAR (255),
+                            user_id VARCHAR (2)
                         );"""
         delete_table_1 = """DROP TABLE IF EXISTS "{}";"""
         delete_table_2 = """DROP TABLE IF EXISTS params;"""
 
-        # try:
         self.connection = sqlite3.connect('db.db', check_same_thread=False)
         self.cursor = self.connection.cursor()
 
@@ -65,14 +65,16 @@ class parser():
         self.connection.commit()
         self.cursor.execute(create_table_2)
         self.connection.commit()
-        self.cursor.execute("""INSERT INTO "params" ("info", "status") VALUES ('parser_status', 'False');""")
-        self.connection.commit()
-        self.cursor.execute("""INSERT INTO "params" ("info", "status") VALUES ('parser_post', '...');""")
-        self.connection.commit()
-        self.cursor.execute("""INSERT INTO "params" ("info", "status") VALUES ('parser_all_posts', '...');""")
-        self.connection.commit()
-        self.cursor.execute("""INSERT INTO "params" ("info", "status") VALUES ('parser_time', '...');""")
-        self.connection.commit()
+        for i in range(51):
+            i = str(i)
+            self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_status', '0', '{}');""".format('0' + i if len(i) == 1 else i))
+            self.connection.commit()
+            self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_post', '...', '{}');""".format('0' + i if len(i) == 1 else i))
+            self.connection.commit()
+            self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_all_posts', '...', '{}');""".format('0' + i if len(i) == 1 else i))
+            self.connection.commit()
+            self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_time', '...', '{}');""".format('0' + i if len(i) == 1 else i))
+            self.connection.commit()
 
         print("SQLite connected")
 
@@ -106,7 +108,7 @@ class parser():
         self.user_id = user_id
 
     def parser_function(self):
-        self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (1, 'parser_status'))
+        self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (1, 'parser_status', self.user_id))
         self.connection.commit()
 
         self.start = timer()
@@ -193,7 +195,7 @@ class parser():
         self._index = 0
         self.index = 0
 
-        self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (str(len(self.posts)), 'parser_all_posts'))
+        self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(len(self.posts)), 'parser_all_posts', self.user_id))
         self.connection.commit()
 
         # sys.exit()
@@ -204,7 +206,7 @@ class parser():
                 self.start_time = timer()
 
                 self.console.log(f"[yellow]Scaning post [bold]{self.index + 1}/{len(self.posts)}[/bold] complete[/yellow]")
-                self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (str(self.index + 1), 'parser_post'))
+                self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(self.index + 1), 'parser_post', self.user_id))
                 self.connection.commit()
                 self.index += 1
 
@@ -330,7 +332,7 @@ class parser():
 
                 print('≈' + str(round(self.timer, 2)))
 
-                self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (str(round(self.timer, 2)), 'parser_time'))
+                self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(round(self.timer, 2)), 'parser_time', self.user_id))
                 self.connection.commit()
 
         print()
@@ -339,7 +341,7 @@ class parser():
 
         self.console.print('[bold green]All posts:', len(self.sorted_posts))
 
-        self.cursor.execute("""UPDATE params SET status = ? WHERE info = ?;""", (0, 'parser_status'))
+        self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (0, 'parser_status', self.user_id))
         self.connection.commit()
 
         if (self.connection):
@@ -347,7 +349,7 @@ class parser():
             self.connection.close()
             print("SQLite connection closed")
 
-        with open("static/posts.csv", "w", newline='') as csvfile:
+        with open(f"static/users/{self.user_id}/posts.csv", "w", newline='') as csvfile:
             filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
             filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
             for i in self.sorted_posts:

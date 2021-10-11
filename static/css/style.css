@@ -1,4 +1,4 @@
-html, body {
+body {
     height: 100%;
     background-image: linear-gradient(-105deg, #009acc, #363795);
     color: rgb(147, 191, 236);
@@ -41,6 +41,14 @@ input, button.button {
     color: rgb(147, 191, 236);
 }
 
+button.button_2 {
+    font-size: 55px;
+    outline: none;
+    background-color: #ffffff00;
+    border: none;
+    color: rgb(147, 191, 236);
+}
+
 button.button {
     margin-top: 20px;
     background-color: #ffffff2a;
@@ -51,7 +59,7 @@ input {
     padding-right: 6px;
 }
 
-button.button, .checkbox {
+button, .checkbox {
     cursor: pointer;
 }
 

@@ -6,6 +6,7 @@ function clickFunction() {
     var subscribers_text = document.getElementById("subscribers_ul");
     var subscribers_input = document.getElementById("subscribers-input");
     var date_checkBox = document.getElementById("date_checkBox");
+    var date_input_checkBox = document.getElementById("date-input");
     var date_text = document.getElementById("date_ul");
     var date_input_1 = document.getElementById("date-input_1");
     var date_input_2 = document.getElementById("date-input_2");
@@ -30,10 +31,12 @@ function clickFunction() {
         date_text.style.display = "block";
         date_input_1.setAttribute('required', '');
         date_input_2.setAttribute('required', '');
+        date_input_checkBox.value = 'YES';
     } else {
         date_text.style.display = "none";
         date_input_1.removeAttribute('required');
         date_input_2.removeAttribute('required');
+        date_input_checkBox.value = 'NO';
     }
 }
 
@@ -52,8 +55,6 @@ function check_invalid_str() {
     var likes = null;
     var subscribers = null;
     var date = null;
-    var id_input = document.getElementById("id-input");
-    var password_input = document.getElementById("password-input");
     var limit_input = document.getElementById("limit-input");
     var likes_input = document.getElementById("likes-input");
     var likes_checkBox = document.getElementById("likes_checkbox");
@@ -88,7 +89,7 @@ function check_invalid_str() {
         }
     }
 
-    if (id_input.value != '' && password_input.value != '' && limit_input.value != '' && (likes == null || likes) && (subscribers == null || subscribers) && keyword_input.value != '' && (date == null || date)) {
+    if (limit_input.value != '' && (likes == null || likes) && (subscribers == null || subscribers) && keyword_input.value != '' && (date == null || date)) {
         show_load();
     }
 }
