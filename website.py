@@ -116,7 +116,7 @@ def load():
         subscribers = [(True if request.args.get('subscribers-input__count') != '' else False), request.args.get('subscribers_select'), int(request.args.get('subscribers-input__count'))]
     else:
         subscribers = [False, '', 0]
-    verified = True if request.args.get('verified-select') != 'Yes' else False
+    verified = True if request.args.get('verified-select') == 'Yes' else False
     key_word = request.args.get('key_word-input')
     stop_word = request.args.get('stop_word-input')
     bool_time = True if request.args.get('date-checkbox') == 'YES' else False
