@@ -101,6 +101,12 @@ class parser():
             stop_date = ''
         self.FILTERS = {'likes': [likes[0], likes[1], int(likes[2])], 'subscribers': [subscribers[0], subscribers[1], int(subscribers[2])], 'verified': verified, 'key_word': key_word, 'stop_word': stop_word, 'start_date': start_date, 'stop_date': stop_date}
         self.LIMIT = int(limit)
+        self.end_date = self.FILTERS['stop_date']
+        self.start_date = self.FILTERS['start_date']
+        response = int(requests.get(f"https://api.vk.com/method/newsfeed.search?lang=ru&access_token={self.access_tokens[0]}&q={self.FILTERS['key_word']}&end_time={self.end_date}&start_time={self.start_date}&count=200&v=5.131").json()['response']['count'])
+        if self.LIMIT > response and response != 1000:
+            self.LIMIT = response - 3
+        print('LIMIT:', self.LIMIT)
         self.posts = list()
         self.sorted_posts = list()
         self.all_timers = list()
@@ -116,7 +122,6 @@ class parser():
 
         with self.console.status("[bold green]Parsind data...") as self.status:
             self.counter = 0
-            self.end_date = self.FILTERS['stop_date']
             while True:
                 self.counter += 1
 
@@ -126,6 +131,11 @@ class parser():
                         if self.end_date <= self.FILTERS['start_date']:
                             _continue = False
                             break
+
+
+                    if len(self.posts) >= self.LIMIT:
+                        _continue = False
+                        break
 
                     try:
                         if self.FILTERS['start_date'] != '':
@@ -141,7 +151,7 @@ class parser():
                     try:
                         if response.json()['response']['items'] == list():
                             self.access_token_index += 1
-                            print('[red][bold]Access token index[/bold] - ' + str(self.access_token_index - 1) + '[/red]')
+                            self.console.print('[red][bold]Access token index[/bold] - ' + str(self.access_token_index - 1) + '[/red]')
                             continue
                     except KeyError:
                         if response.json()['error']['error_msg'] == 'Too many requests per second':
@@ -160,10 +170,6 @@ class parser():
 
                     print(response.url)
 
-                    if len(self.posts) >= self.LIMIT:
-                        _continue = False
-                        break
-
                     response = response.json()['response']['items']
                     break
 
@@ -173,7 +179,6 @@ class parser():
                 print()
                 for j in response:
                     self.posts.append(j)
-                print(len(self.posts))
 
                 self.end_date = self.posts[-1]['date'] - 1
 
