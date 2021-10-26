@@ -17,14 +17,20 @@ list_filters = list()
 
 @app.route('/login', methods=['GET'])
 def login():
-    return render_template('login.html')
+    error = request.args.get('error')
+    if error == None:
+        error = ''
+    return render_template('login.html', error=error)
 
 @app.route('/', methods=['GET'])
 def home():
     user_id = request.args.get('user_id')
+    print('USER ID:', user_id)
+    if len(user_id) != 2 or 0 <= int(user_id) <= 50:
+        return redirect('/login?error=Wrond+user+id')
     if user_id != None and user_id != '':
         return render_template('home.html', error=error, user_id=user_id)
-    return redirect('/login')
+    return redirect('/login?error=')
 
 @app.route('/change_password', methods=['GET'])
 def change_password():
