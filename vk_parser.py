@@ -160,7 +160,7 @@ class parser():
                             self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]user is blocked.[/bold][/red]')
                             self.access_tokens.pop(self.access_token_index)
                             continue
-                        elif response.json()['error']['error_msg'] == 'User authorization failed: invalid access_token (4).':
+                        elif response.json()['error']['error_msg'] in ['User authorization failed: invalid access_token (4).', 'User authorization failed: invalid access_token (8).']:
                             self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]invalid access_token.[/bold][/red]')
                             self.invalid_access_tokens.append(self.access_tokens[self.access_token_index])
                             self.access_tokens.pop(self.access_token_index)
@@ -170,7 +170,10 @@ class parser():
 
                     print(response.url)
 
-                    response = response.json()['response']['items']
+                    try:
+                        response = response.json()['response']['items']
+                    except KeyError:
+                        self.console.print('[red bold]ERROR:', response.json)
                     break
 
                 if not _continue:
@@ -354,15 +357,26 @@ class parser():
             self.connection.close()
             print("SQLite connection closed")
 
-        with open(f"static/users/{self.user_id}/posts.csv", "w", newline='') as csvfile:
-            filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
-            for i in self.sorted_posts:
-                i[5] = i[5].replace('\n', ' ')
-                try:
-                    filewriter.writerow([i[0], i[8]] + i[1:8])
-                except UnicodeEncodeError:
-                    pass
+        try:
+            with open(f"static/users/{self.user_id}/posts.csv", "w", newline='') as csvfile:
+                filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
+                for i in self.sorted_posts:
+                    i[5] = i[5].replace('\n', ' ')
+                    try:
+                        filewriter.writerow([i[0], i[8]] + i[1:8])
+                    except UnicodeEncodeError:
+                        pass
+        except FileNotFoundError:
+            with open(f"static/users/{self.user_id}/posts.csv", "w", newline='') as csvfile:
+                filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
+                for i in self.sorted_posts:
+                    i[5] = i[5].replace('\n', ' ')
+                    try:
+                        filewriter.writerow([i[0], i[8]] + i[1:8])
+                    except UnicodeEncodeError:
+                        pass
 
         return (self.user_id, self.sorted_posts)
 
