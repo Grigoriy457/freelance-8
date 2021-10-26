@@ -26,10 +26,13 @@ def login():
 def home():
     user_id = request.args.get('user_id')
     print('USER ID:', user_id)
-    if len(user_id) != 2 or 0 <= int(user_id) <= 50:
-        return redirect('/login?error=Wrond+user+id')
-    if user_id != None and user_id != '':
-        return render_template('home.html', error=error, user_id=user_id)
+    if user_id not in ['', None]:
+        print(int(user_id))
+        print(len(user_id) == 2, 0 <= int(user_id) <= 50)
+        if not (len(user_id) == 2 and 0 <= int(user_id) <= 50):
+            return redirect('/login?error=Wrond+user+id')
+        if user_id != None and user_id != '':
+            return render_template('home.html', error=error, user_id=user_id)
     return redirect('/login?error=')
 
 @app.route('/change_password', methods=['GET'])

@@ -25,6 +25,11 @@
 		</div>
 	</header>
      <main>
+          <div>
+               {% if error != '' %}
+                    <h3 style="color: red;"><b>[!]</b> {{ error }}</h3>
+               {% endif %}
+          </div>
           <form action="/">
                <h2 class="subtitle">Id: <input type="number" name="user_id" class="id-input" id="id-input" autocomplete="off" required></h2>
                <button type="submit" class="button">Submit</button>
