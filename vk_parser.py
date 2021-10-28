@@ -103,7 +103,16 @@ class parser():
         self.LIMIT = int(limit)
         self.end_date = self.FILTERS['stop_date']
         self.start_date = self.FILTERS['start_date']
-        response = int(requests.get(f"https://api.vk.com/method/newsfeed.search?lang=ru&access_token={self.access_tokens[0]}&q={self.FILTERS['key_word']}&end_time={self.end_date}&start_time={self.start_date}&count=200&v=5.131").json()['response']['count'])
+        while True:
+            response = requests.get(f"https://api.vk.com/method/newsfeed.search?lang=ru&access_token={self.access_tokens[0]}&q={self.FILTERS['key_word']}&end_time={self.end_date}&start_time={self.start_date}&count=200&v=5.131").json()
+            try:
+                response = int(response['response']['count'])
+                break
+            except KeyError:
+                if response['error']['error_msg'] == 'User authorization failed: user is blocked.':
+                    self.access_tokens.pop(self.access_token_index)
+        with open('access_tokens.txt', 'w') as access_tokens_file:
+            access_tokens_file.write('\n'.join(self.access_tokens))
         if self.LIMIT > response and response != 1000:
             self.LIMIT = response - 3
         print('LIMIT:', self.LIMIT)
