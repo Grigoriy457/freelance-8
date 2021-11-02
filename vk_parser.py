@@ -163,26 +163,29 @@ class parser():
                             self.console.print('[red][bold]Access token index[/bold] - ' + str(self.access_token_index - 1) + '[/red]')
                             continue
                     except KeyError:
-                        if response.json()['error']['error_msg'] == 'Too many requests per second':
-                            continue
-                        elif response.json()['error']['error_msg'] == 'User authorization failed: user is blocked.':
-                            self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]user is blocked.[/bold][/red]')
-                            self.access_tokens.pop(self.access_token_index)
-                            continue
-                        elif response.json()['error']['error_msg'] in ['User authorization failed: invalid access_token (4).', 'User authorization failed: invalid access_token (8).']:
-                            self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]invalid access_token.[/bold][/red]')
-                            self.invalid_access_tokens.append(self.access_tokens[self.access_token_index])
-                            self.access_tokens.pop(self.access_token_index)
-                            continue
-                        else:
-                            print(response.json())
+                        try:
+                            if response.json()['error']['error_msg'] == 'Too many requests per second':
+                                continue
+                            elif response.json()['error']['error_msg'] == 'User authorization failed: user is blocked.':
+                                self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]user is blocked.[/bold][/red]')
+                                self.access_tokens.pop(self.access_token_index)
+                                continue
+                            elif response.json()['error']['error_msg'] in ['User authorization failed: invalid access_token (4).', 'User authorization failed: invalid access_token (8).', 'User authorization failed: invalid session.']:
+                                self.console.print(f'[red]{self.access_tokens[self.access_token_index]} - [bold]invalid access_token.[/bold][/red]')
+                                self.invalid_access_tokens.append(self.access_tokens[self.access_token_index])
+                                self.access_tokens.pop(self.access_token_index)
+                                continue
+                            else:
+                                self.console.print('[red bold]<ERROR:>[/red bold] [yellow]', response.json())
+                        except KeyError:
+                            self.console.print('[red bold]<ERROR:>[/red bold] [yellow]', response.json())
 
                     print(response.url)
 
                     try:
                         response = response.json()['response']['items']
                     except KeyError:
-                        self.console.print('[red bold]ERROR:', response.json)
+                        pass
                     break
 
                 if not _continue:
@@ -192,7 +195,16 @@ class parser():
                 for j in response:
                     self.posts.append(j)
 
-                self.end_date = self.posts[-1]['date'] - 1
+                index = -1
+                while True:
+                    try:
+                        self.end_date = self.posts[index]['date'] - 1
+                        break
+                    except TypeError:
+                        index -= 1
+                if index < -1:
+                    index += 1
+                    self.posts = self.posts[:index]
 
         print()
 
@@ -205,6 +217,7 @@ class parser():
         self.end = timer()
         self.console.print('[cyan]Parsing from VK completed successfully (', round(self.end - self.start, 2), '[bold cyan]sec[/bold cyan] [cyan])!')
         print()
+
 
         print(datetime.datetime.utcfromtimestamp(self.posts[-1]['date']))
         self.posts = self.posts[:self.LIMIT]
