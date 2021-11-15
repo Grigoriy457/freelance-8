@@ -283,11 +283,14 @@ class parser():
                             self.title = response['response'][0]['first_name'] + response['response'][0]['last_name']
                             break
                         except KeyError:
-                            if response['error']['error_msg'] == 'Too many requests per second':
-                                continue
-                            else:
-                                print(response)
-                                break
+                            try:
+                                if response['error']['error_msg'] == 'Too many requests per second':
+                                    continue
+                                else:
+                                    print(response)
+                                    break
+                            except KeyError:
+                                self.console.print('[red bold]<ERROR:>[/red bold] [yellow]', response)
 
 
                 if self.FILTERS['likes'][0]:
