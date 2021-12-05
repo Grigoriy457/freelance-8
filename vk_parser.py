@@ -3,39 +3,19 @@ import datetime
 from datetime import date
 from timeit import default_timer as timer
 import time
-import math
 import sys
 import os
 import re
 from rich.console import Console
 import sqlite3
 import csv
-import unicodedata
-from unidecode import unidecode
-from transliterate import translit
 
-def strip_emoji(text):
-    returnString = ""
-
-    for character in text:
-        try:
-            character.encode("ascii")
-            returnString += character
-        except UnicodeEncodeError:
-            replaced = unidecode(str(character))
-            if replaced != '':
-                returnString += replaced
-            else:
-                # try:
-                #      returnString += "[" + unicodedata.name(character) + "]"
-                # except ValueError:
-                #      returnString += "[x]"
-                returnString += ' '
-    return returnString
 
 class parser():
     def __init__(self, user_id=None, limit=None, likes=None, subscribers=None, verified=None, key_word=None, stop_word=None, start_date=None, stop_date=None):
-        create_table_1 = """CREATE TABLE IF NOT EXISTS "{}" (
+        create_table_1 = """CREATE TABLE IF NOT EXISTS posts (
+                            user_id      VARCHAR (255)  NOT NULL,
+                            [index]      INTEGER        NOT NULL,
                             url          VARCHAR (255)  NOT NULL,
                             title        VARCHAR (255)  NOT NULL,
                             date         VARCHAR (255)  NOT NULL,
@@ -44,39 +24,38 @@ class parser():
                             subscribers  INTEGER        NOT NULL,
                             text         VARCHAR (4000),
                             img_or_video VARCHAR (1000),
-                            [index]      INTEGER        NOT NULL
                         );"""
         create_table_2 = """CREATE TABLE IF NOT EXISTS params (
                             info VARCHAR (255),
                             status VARCHAR (255),
                             user_id VARCHAR (2)
                         );"""
-        delete_table_1 = """DROP TABLE IF EXISTS "{}";"""
+        delete_table_1 = """DROP TABLE IF EXISTS posts;"""
         delete_table_2 = """DROP TABLE IF EXISTS params;"""
 
         self.connection = sqlite3.connect('db.db', check_same_thread=False)
         self.cursor = self.connection.cursor()
 
-        self.cursor.execute(delete_table_1.format(user_id))
-        self.connection.commit()
-        self.cursor.execute(delete_table_2)
-        self.connection.commit()
-        self.cursor.execute(create_table_1.format(user_id))
-        self.connection.commit()
-        self.cursor.execute(create_table_2)
-        self.connection.commit()
-        for i in range(51):
-            i = str(i)
-            self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_status', '0', '{}');""".format('0' + i if len(i) == 1 else i))
-            self.connection.commit()
-            self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_post', '...', '{}');""".format('0' + i if len(i) == 1 else i))
-            self.connection.commit()
-            self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_all_posts', '...', '{}');""".format('0' + i if len(i) == 1 else i))
-            self.connection.commit()
-            self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_time', '...', '{}');""".format('0' + i if len(i) == 1 else i))
-            self.connection.commit()
-
         print("SQLite connected")
+
+        # self.cursor.execute(delete_table_1.format(user_id))
+        # self.connection.commit()
+        # self.cursor.execute(delete_table_2)
+        # self.connection.commit()
+        # self.cursor.execute(create_table_1.format(user_id))
+        # self.connection.commit()
+        # self.cursor.execute(create_table_2)
+        # self.connection.commit()
+        # for i in range(51):
+        #     i = str(i)
+        #     self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_status', '0', '{}');""".format('0' + i if len(i) == 1 else i))
+        #     self.connection.commit()
+        #     self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_post', '...', '{}');""".format('0' + i if len(i) == 1 else i))
+        #     self.connection.commit()
+        #     self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_all_posts', '...', '{}');""".format('0' + i if len(i) == 1 else i))
+        #     self.connection.commit()
+        #     self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_time', '...', '{}');""".format('0' + i if len(i) == 1 else i))
+        #     self.connection.commit()
 
         # except sqlite3.Error as error:
         #     print("Error connecting to sqlite\n" + str(error))
@@ -333,7 +312,7 @@ class parser():
                     except KeyError:
                         pass
 
-                post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), int(self.subscribers), translit(strip_emoji(self.text), 'ru'), img_or_video, int(self._index + 1), self.title]
+                post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), int(self.subscribers), self.text, img_or_video, int(self._index + 1), self.title]
                 # print(post)
                 text = ''
                 for j in post[5]:
@@ -342,7 +321,7 @@ class parser():
                     else:
                         text += j
                 post[5] = text
-                self.cursor.execute("""INSERT INTO "{}" (url, title, date, likes, reposts, subscribers, text, img_or_video, [index]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);""".format(self.user_id), (post[0], post[8], post[1], post[2], post[3], post[4], post[5], str(post[6]), post[7]))
+                self.cursor.execute("""INSERT INTO "posts" (user_id, [index], url, title, date, likes, reposts, subscribers, text, img_or_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (self.user_id, post[7], post[0], post[8], post[1], post[2], post[3], post[4], post[5], str(post[6])))
                 self.connection.commit()
                 self.sorted_posts.append(post)
 
@@ -382,26 +361,15 @@ class parser():
             self.connection.close()
             print("SQLite connection closed")
 
-        try:
-            with open(f"static/users/{self.user_id}/posts.csv", "w", newline='') as csvfile:
-                filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
-                for i in self.sorted_posts:
-                    i[5] = i[5].replace('\n', ' ')
-                    try:
-                        filewriter.writerow([i[0], i[8]] + i[1:8])
-                    except UnicodeEncodeError:
-                        pass
-        except FileNotFoundError:
-            with open(f"static/users/{self.user_id}/posts.csv", "w", newline='') as csvfile:
-                filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
-                for i in self.sorted_posts:
-                    i[5] = i[5].replace('\n', ' ')
-                    try:
-                        filewriter.writerow([i[0], i[8]] + i[1:8])
-                    except UnicodeEncodeError:
-                        pass
+        with open(f"static/users/{self.user_id}/posts.csv", "w", newline='', encoding='utf-16') as csvfile:
+            filewriter = csv.writer(csvfile, dialect='excel', delimiter=',', quoting=csv.QUOTE_ALL)
+            filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
+            for i in self.sorted_posts:
+                i[5] = i[5].replace('\n', ' ')
+                try:
+                    filewriter.writerow([i[0], i[8]] + i[1:8])
+                except UnicodeEncodeError:
+                    pass
 
         return (self.user_id, self.sorted_posts)
 

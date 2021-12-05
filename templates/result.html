@@ -45,28 +45,40 @@
           </div>
           <p>
                {% for i in posts[((page - 1) * 1000):(page * 1000)] %}
-                    <fieldset>
-                         <legend>Post index: {{ i[8] }}</legend>
+                    <fieldset id="{{ i[1] }}">
+                         <legend>Post index: {{ i[1] }}
+                              <span class="star" style="font-size: 25px;">
+                                   {% if i[10] == False %}
+                                        <a class="star" href="/favourite/{{ user_id }}/{{ page }}/{{ i[1] }}" style="text-decoration: none; color: blue;">
+                                             ☆
+                                        </a>
+                                   {% else %}
+                                        <a class="star" href="/unfavourite/{{ user_id }}/{{ page }}/{{ i[1] }}" style="text-decoration: none; color: #ff7e00;">
+                                             ★
+                                        </a>
+                                   {% endif %}
+                              </span>
+                         </legend>
 
-                         <b style="color: rgb(41 129 219);">Title: </b> <a href="{{ i[0] }}" target="_blank" style="font-family: none;">{{ i[1] }}</a>
+                         <b style="color: rgb(41 129 219);">Title: </b> <a href="{{ i[2] }}" target="_blank" style="font-family: none;">{{ i[3] }}</a>
 
                          <br>
 
-                         <b style="color: rgb(41 129 219);">Date:</b> {{ i[2] }}
+                         <b style="color: rgb(41 129 219);">Date:</b> {{ i[4] }}
 
                          <br>
 
-                         <b style="color: rgb(41 129 219);">Likes:</b> {{ i[3] }}; <b style="color: rgb(41 129 219);">Reposts:</b> {{ i[4] }}; <b style="color: rgb(41 129 219);">Subsribers:</b> {{ i[5] }}
+                         <b style="color: rgb(41 129 219);">Likes:</b> {{ i[5] }}; <b style="color: rgb(41 129 219);">Reposts:</b> {{ i[6] }}; <b style="color: rgb(41 129 219);">Subsribers:</b> {{ i[7] }}
 
                          <br>
 
-                         {% if i[6] != '' %}
-                              <b style="color: rgb(41 129 219);">Text:</b> <span style="font-family: none;">{{ i[6] }}</span><br>
+                         {% if i[8] != '' %}
+                              <b style="color: rgb(41 129 219);">Text:</b> <span style="font-family: none;">{{ i[8] }}</span><br>
                          {% endif %}
 
-                         {% if i[7] != [] %}
+                         {% if i[9] != [] %}
                               <b style="color: rgb(41 129 219);">Img:</b>
-                              {% for j in i[7] %}
+                              {% for j in i[9] %}
                                    <img src="{{ j }}" alt="{{ j }}">
                               {% endfor %}
                          {% endif %}
@@ -75,9 +87,9 @@
                     <br>
                {% endfor %}
           </p>
-          <p>
-               All pages: {% for i in range_posts %}<a class="page" href="/result/{{ i }}">{{ i }}</a> {% endfor %}
-          </p>
+          <h1>
+               <b style="color: rgb(41 129 219);">All pages</b>: {% for i in range_posts %}<a class="page" href="/result/{{ i }}/{{ user_id }}">{{ i }}</a> {% endfor %}
+          </h1>
      </main>
 </body>
 <style type="text/css">

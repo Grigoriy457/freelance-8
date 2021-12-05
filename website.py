@@ -3,6 +3,7 @@ import time
 from vk_parser import parser, starter
 import sqlite3
 import sys
+from rich.console import Console
 
 app = Flask(__name__)
 posts = list()
@@ -12,8 +13,11 @@ status = 'one_console'
 connection = sqlite3.connect('db.db', check_same_thread=False)
 cursor = connection.cursor()
 
+console = Console()
+
 error = ['' for i in range(51)]
 list_filters = list()
+
 
 @app.route('/login', methods=['GET'])
 def login():
@@ -22,22 +26,23 @@ def login():
         error = ''
     return render_template('login.html', error=error)
 
+
 @app.route('/', methods=['GET'])
 def home():
     user_id = request.args.get('user_id')
     print('USER ID:', user_id)
     if user_id not in ['', None]:
-        print(int(user_id))
-        print(len(user_id) == 2, 0 <= int(user_id) <= 50)
         if not (len(user_id) == 2 and 0 <= int(user_id) <= 50):
-            return redirect('/login?error=Wrond+user+id')
+            return redirect('/login?error=Wrong+user+id+%28from+00+to+50%29') # Wrong user id (from 00 to 50)
         if user_id != None and user_id != '':
             return render_template('home.html', error=error, user_id=user_id)
     return redirect('/login?error=')
 
+
 @app.route('/change_password', methods=['GET'])
 def change_password():
     return render_template('change_password.html', error=error)
+
 
 @app.route('/set_new_password', methods=['GET', 'POST'])
 def set_new_password():
@@ -68,22 +73,26 @@ def set_new_password():
     else:
         return redirect('/', code=302)
 
+
 def get_all_posts(user_id):
     global cursor
-    cursor.execute("""SELECT * FROM "{}";""".format(user_id))
+    cursor.execute("""SELECT * FROM "posts" WHERE "user_id"='{}';""".format(user_id))
     posts = cursor.fetchall()
     _posts = list()
     list_img = list()
     for i in posts:
-        list_img = i[7].split(', ')
+        list_img = i[9].split(', ')
         list_img[0] = list_img[0][1:]
         list_img[-1] = list_img[-1][:-1]
         for j in range(len(list_img )):
             list_img[j] = list_img[j][1:-1]
         if list_img == ['']:
             list_img = list()
-        _posts.append((i[0], i[1], i[2], i[3], i[4], i[5], i[6], list_img, i[8]))
+        cursor.execute("""SELECT * FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(i[0], i[2]))
+        favurite_checker = bool(cursor.fetchone())
+        _posts.append((i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8], list_img, favurite_checker))
     return _posts
+
 
 @app.route('/show_status_load/<string:user_id>', methods=['GET', 'POST'])
 def show_status_load(user_id):
@@ -95,6 +104,7 @@ def show_status_load(user_id):
         return render_template('load.html', time=_time, now_post=now_post, all_post=all_post, user_id=user_id)
     else:
         return redirect(f'/result/1/{user_id}', code=302)
+
 
 @app.route('/load', methods=['GET'])
 def load():
@@ -172,6 +182,7 @@ def load():
     else:
         return redirect('/', code=302)
 
+
 @app.route('/result/<int:page>/<string:user_id>/')
 def int_result(page, user_id):
     global list_filters
@@ -182,9 +193,20 @@ def int_result(page, user_id):
     else:
         return redirect('/', code=302)
 
+
+@app.route('/favourite/<string:user_id>/<int:page>/<int:post_id>')
+def do_favourite(user_id, page, post_id):
+    console.print(f'[yellow][bold][INFO]:[/bold] Now post {post_id} on page {page} has become a favorite of user {user_id}[/yellow]')
+    return redirect(f'/result/{page}/{user_id}/#{post_id}', code=302)
+
+
+@app.route('/unfavourite/<string:user_id>/<int:page>/<int:post_id>')
+def do_unfavourite(user_id, page, post_id):
+    console.print(f'[yellow][bold][INFO]:[/bold] Now post {post_id} on page {page} has become an unfavorite of user {user_id}[/yellow]')
+    return redirect(f'/result/{page}/{user_id}/#{post_id}', code=302)
+
+
 if __name__ == '__main__':
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
     print('run')
     app.run(host='0.0.0.0')
-    # app.run(host='10.10.10.58', debug=False, port=5500)
-    # app.run(host='localhost', debug=False, port=5500)
