@@ -197,13 +197,34 @@ def int_result(page, user_id):
 @app.route('/favourite/<string:user_id>/<int:page>/<int:post_id>')
 def do_favourite(user_id, page, post_id):
     console.print(f'[yellow][bold][INFO]:[/bold] Now post {post_id} on page {page} has become a favorite of user {user_id}[/yellow]')
+
+    cursor.execute("""SELECT * FROM "posts" WHERE "user_id"='{}' AND "index"='{}';""".format(user_id, post_id))
+    data = list(cursor.fetchone())
+    data = tuple([data[0]] + data[2:])
+
+    cursor.execute("""INSERT INTO "favourite" (user_id, url, title, date, likes, reposts, subscribers, text, img_or_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);""", data)
+    connection.commit()
+
     return redirect(f'/result/{page}/{user_id}/#{post_id}', code=302)
 
 
 @app.route('/unfavourite/<string:user_id>/<int:page>/<int:post_id>')
 def do_unfavourite(user_id, page, post_id):
     console.print(f'[yellow][bold][INFO]:[/bold] Now post {post_id} on page {page} has become an unfavorite of user {user_id}[/yellow]')
+
+    cursor.execute("""SELECT * FROM "posts" WHERE "user_id"='{}' AND "index"='{}';""".format(user_id, post_id))
+    data = list(cursor.fetchone())
+
+    cursor.execute("""DELETE FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(user_id, data[2]))
+    connection.commit()
+
     return redirect(f'/result/{page}/{user_id}/#{post_id}', code=302)
+
+
+@app.route('/favourite_posts/<string:user_id>')
+def favourite_posts(user_id):
+    return ''
+
 
 
 if __name__ == '__main__':
