@@ -74,24 +74,60 @@ def set_new_password():
         return redirect('/', code=302)
 
 
-def get_all_posts(user_id):
-    global cursor
-    cursor.execute("""SELECT * FROM "posts" WHERE "user_id"='{}';""".format(user_id))
-    posts = cursor.fetchall()
+
+def sort_posts(posts, bool_posts=False):
     _posts = list()
     list_img = list()
-    for i in posts:
-        list_img = i[9].split(', ')
-        list_img[0] = list_img[0][1:]
-        list_img[-1] = list_img[-1][:-1]
-        for j in range(len(list_img )):
-            list_img[j] = list_img[j][1:-1]
-        if list_img == ['']:
-            list_img = list()
-        cursor.execute("""SELECT * FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(i[0], i[2]))
-        favurite_checker = bool(cursor.fetchone())
-        _posts.append((i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8], list_img, favurite_checker))
+    index = 1
+    if bool_posts:
+        for i in posts:
+            list_img = i[9].split(', ')
+            list_img[0] = list_img[0][1:]
+            list_img[-1] = list_img[-1][:-1]
+            for j in range(len(list_img )):
+                list_img[j] = list_img[j][1:-1]
+            if list_img == ['']:
+                list_img = list()
+            cursor.execute("""SELECT * FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(i[0], i[2]))
+            favurite_checker = cursor.fetchone()
+            favurite_checker = bool(favurite_checker)
+
+            _posts.append((i[0], index, i[2], i[3], i[4], i[5], i[6], i[7], i[8], list_img, favurite_checker))
+
+            index += 1
+    else:
+        for i in posts:
+            list_img = i[8].split(', ')
+            list_img[0] = list_img[0][1:]
+            list_img[-1] = list_img[-1][:-1]
+            for j in range(len(list_img )):
+                list_img[j] = list_img[j][1:-1]
+            if list_img == ['']:
+                list_img = list()
+            cursor.execute("""SELECT * FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(i[0], i[1]))
+            favurite_checker = bool(cursor.fetchone())
+
+            _posts.append((i[0], index, i[1], i[2], i[3], i[4], i[5], i[6], i[7], list_img, favurite_checker))
+
+            index += 1
     return _posts
+
+
+
+def get_all_posts(user_id):
+    cursor.execute("""SELECT * FROM "posts" WHERE "user_id"='{}';""".format(user_id))
+    posts = cursor.fetchall()
+
+    return sort_posts(posts, bool_posts=True)
+
+
+
+def get_favourited_posts(user_id):
+    cursor.execute("""SELECT * FROM "favourite" WHERE "user_id"='{}';""".format(user_id))
+    posts = cursor.fetchall()
+
+    return sort_posts(posts)
+
 
 
 @app.route('/show_status_load/<string:user_id>', methods=['GET', 'POST'])
@@ -187,9 +223,9 @@ def load():
 def int_result(page, user_id):
     global list_filters
     _posts = get_all_posts(user_id)
-    print('Len posts:', len(_posts))
     if _posts != list() and _posts != None:
-        return render_template('result.html', user_id=user_id, posts=_posts, len_posts=len(_posts), page=page, range_posts=range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1))), list_filters=list_filters)
+        range_posts = range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1)))
+        return render_template('result.html', user_id=user_id, posts=_posts, len_posts=len(_posts), page=page, range_posts=range_posts, list_filters=list_filters)
     else:
         return redirect('/', code=302)
 
@@ -210,20 +246,42 @@ def do_favourite(user_id, page, post_id):
 
 @app.route('/unfavourite/<string:user_id>/<int:page>/<int:post_id>')
 def do_unfavourite(user_id, page, post_id):
+    url = request.args.get('url')
+
     console.print(f'[yellow][bold][INFO]:[/bold] Now post {post_id} on page {page} has become an unfavorite of user {user_id}[/yellow]')
 
-    cursor.execute("""SELECT * FROM "posts" WHERE "user_id"='{}' AND "index"='{}';""".format(user_id, post_id))
-    data = list(cursor.fetchone())
+    if request.args.get('from') == "fp":
+        # cursor.execute("""SELECT * FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(user_id, url))
+        # data = list(cursor.fetchone())
 
-    cursor.execute("""DELETE FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(user_id, data[2]))
-    connection.commit()
+        cursor.execute("""DELETE FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(user_id, url))
+        connection.commit()
 
-    return redirect(f'/result/{page}/{user_id}/#{post_id}', code=302)
+        return redirect(f'/favourited_posts/{page}/{user_id}#{post_id}', code=302)
+    else:
+        cursor.execute("""DELETE FROM "favourite" WHERE "user_id"='{}' AND "url"='{}';""".format(user_id, url))
+        connection.commit()
+
+        return redirect(f'/result/{page}/{user_id}#{post_id}', code=302)
 
 
-@app.route('/favourite_posts/<string:user_id>')
-def favourite_posts(user_id):
-    return ''
+@app.route('/favourited_posts/<int:page>/<string:user_id>')
+def favourited_posts(page, user_id):
+
+    favourited_posts = get_favourited_posts(user_id)
+    try:
+        print(favourited_posts[0])
+    except IndexError:
+        pass
+    range_posts = range(1, ((len(favourited_posts) // 1000) + (2 if len(favourited_posts) % 1000 != 0 else 1)))
+
+    return render_template('favourite.html', user_id=user_id, favourited_posts=favourited_posts, page=page, range_posts=range_posts, len_favourited_posts=len(favourited_posts))
+
+
+
+@app.route('/test')
+def test():
+    return render_template('test.html')
 
 
 

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" style="font-family: 'Quicksand', sans-serif;">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>VK parser (favourite)</title>
+
+     <link rel="icon" type="image/png" href="/static/images/favicon.png"/>
+
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
+
+     <style type="text/css">
+          a.page {
+               display: inline-block;
+               width: 30px;
+               height: 30px;
+               border-radius: 50%;
+               color: rgb(0 126 255);
+               background-color: rgb(0 126 255 / 54%);
+               text-align: center;
+               font-weight: bold;
+               vertical-align: middle;
+               line-height: 28px;
+               text-decoration: none;
+          }
+     
+          h1 {
+               font-size: 29px;
+          }
+     
+          h1.title {
+               color: rgb(147, 191, 236);
+               font-size: 55px;
+               line-height: 48px;
+               font-weight: 100;
+          }
+
+          button.star {
+               padding: 0;
+               border: none;
+               font: inherit;
+               color: inherit;
+               background-color: transparent;
+               /* отображаем курсор в виде руки при наведении; некоторые
+               считают, что необходимо оставлять стрелочный вид для кнопок */
+               cursor: pointer;
+          }
+     </style>
+
+     <script>
+          function param_false_function(param, user_id, page, post_id, url) {
+               user_id = String(user_id);
+
+               if (user_id.length == 1) {
+                    user_id = "0" + user_id;
+               }
+
+               var request = new XMLHttpRequest();
+
+               post = document.getElementsByClassName("param")[(post_id - 1) - ((page - 1) * 1000)];
+               if (post.textContent == "★") {
+                    request.open("GET", "http://10.10.10.58:5000/unfavourite/" + user_id + "/" + page + "/" + post_id + "?from=fp&url=" + url);
+                    request.send();
+
+                    post.textContent = "☆";
+                    post.style.color = "blue";
+               } else {
+                    request.open("GET", "http://10.10.10.58:5000/favourite/" + user_id + "/" + page + "/" + post_id);
+                    request.send();
+
+                    post.textContent = "★";
+                    post.style.color = "#ff7e00";
+               }
+          }
+
+          function param_true_function(param, user_id, page, post_id, url) {
+               user_id = String(user_id);
+
+               if (user_id.length == 1) {
+                    user_id = "0" + user_id;
+               }
+
+               var request = new XMLHttpRequest();
+
+               post = document.getElementsByClassName("param")[(post_id - 1) - ((page - 1) * 1000)];
+               if (post.textContent == "★") {
+                    request.open("GET", "http://10.10.10.58:5000/unfavourite/" + user_id + "/" + page + "/" + post_id + "?from=fp&url=" + url);
+                    request.send();
+
+                    post.textContent = "☆";
+                    post.style.color = "blue";
+               } else {
+                    request.open("GET", "http://10.10.10.58:5000/favourite/" + user_id + "/" + page + "/" + post_id);
+                    request.send();
+
+                    post.textContent = "★";
+                    post.style.color = "#ff7e00";
+               }
+          }
+     </script>
+</head>
+<body>
+     <header class="header">
+          <div class="container">
+               <div class="header__inner">
+                    <h1 class="title">
+                         <a href="/?user_id={{ user_id }}" style="color: rgb(147, 191, 236);">VK parser</a> (favourited posts) |
+                         <a href="/result/1/{{ user_id }}" style="color: rgb(147, 191, 236);">last search</a>
+                    </h1>
+               </div>
+          </div>
+     </header>
+     <main>
+          <h1>
+               <b style="color: rgb(41 129 219);">Page</b>: {{ page }}
+          </h1>
+          {% if len_favourited_posts != 0 %}
+               <h1>
+                    <b style="color: rgb(41 129 219);">All pages</b>: {% for i in range_posts %}<a class="page" href="/result/{{ i }}/{{ user_id }}">{{ i }}</a> {% endfor %}
+               </h1>
+          {% endif %}
+          <h1>
+               <b style="color: rgb(41 129 219);">All posts</b>: {{ len_favourited_posts }}
+          </h1>
+          {% if len_favourited_posts != 0 %}
+               <div style="margin: 16px 0 0;">
+                    <a href="/static/users/{{ user_id }}/favourited_posts.csv" download="favourited_posts.csv" style="display: flex;">
+                         <img src="/static/images/excel.png" alt="excel icon" style="width: 48px; height: 48px;">
+                         <p>Download csv file</p>
+                    </a>
+               </div>
+          {% endif %}
+          <p>
+               {% for i in favourited_posts[((page - 1) * 1000):(page * 1000)] %}
+                    <fieldset id="{{ i[1] }}">
+                         <legend>Post index: {{ i[1] }}
+                              <span class="star" style="font-size: 25px;">
+                                   {% if i[10] == False %}
+                                        <button class="star" onclick='param_false_function(false, "{{ user_id }}", {{ page }}, {{ i[1] }}, "{{ i[2] }}")' style="text-decoration: none; color: blue;">
+                                             <span class="param">☆</span>
+                                        </button>
+                                   {% else %}
+                                        <button class="star" onclick='param_true_function(true, "{{ user_id }}", {{ page }}, {{ i[1] }}, "{{ i[2] }}")' style="text-decoration: none; color: #ff7e00;">
+                                             <span class="param">★</span>
+                                        </button>
+                                   {% endif %}
+                              </span>
+                         </legend>
+
+                         <b style="color: rgb(41 129 219);">Title: </b> <a href="{{ i[2] }}" target="_blank" style="font-family: none;">{{ i[3] }}</a>
+
+                         <br>
+
+                         <b style="color: rgb(41 129 219);">Date:</b> {{ i[4] }}
+
+                         <br>
+
+                         <b style="color: rgb(41 129 219);">Likes:</b> {{ i[5] }}; <b style="color: rgb(41 129 219);">Reposts:</b> {{ i[6] }}; <b style="color: rgb(41 129 219);">Subsribers:</b> {{ i[7] }}
+
+                         <br>
+
+                         {% if i[8] != '' %}
+                              <b style="color: rgb(41 129 219);">Text:</b> <span style="font-family: none;">{{ i[8] }}</span><br>
+                         {% endif %}
+
+                         {% if i[9] != [] %}
+                              <b style="color: rgb(41 129 219);">Img:</b>
+                              {% for j in i[9] %}
+                                   <img src="{{ j }}" alt="{{ j }}">
+                              {% endfor %}
+                         {% endif %}
+                    </fieldset>
+                    <br>
+                    <br>
+               {% endfor %}
+          </p>
+          {% if len_favourited_posts != 0 %}
+               <h1>
+                    <b style="color: rgb(41 129 219);">All pages</b>: {% for i in range_posts %}<a class="page" href="/result/{{ i }}/{{ user_id }}">{{ i }}</a> {% endfor %}
+               </h1>
+          {% endif %}
+     </main>
+</body>
+</html>

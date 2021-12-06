@@ -38,6 +38,9 @@ class parser():
 
         print("SQLite connected")
 
+        self.cursor.execute("""DELETE FROM "posts" WHERE "user_id"='{}';""".format(user_id))
+        self.connection.commit()
+
         # self.cursor.execute(delete_table_1.format(user_id))
         # self.connection.commit()
         # self.cursor.execute(delete_table_2)
@@ -361,15 +364,18 @@ class parser():
             self.connection.close()
             print("SQLite connection closed")
 
-        with open(f"static/users/{self.user_id}/posts.csv", "w", newline='', encoding='utf-16') as csvfile:
+        path = f"static/users/{self.user_id}/posts.csv"
+        path_2 = f"static/users/{self.user_id}"
+
+        if not os.path.exists(path):
+            os.mkdir(os.path.abspath(path_2))
+
+        with open(path, "w", newline='', encoding='utf-16') as csvfile:
             filewriter = csv.writer(csvfile, dialect='excel', delimiter=',', quoting=csv.QUOTE_ALL)
             filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
             for i in self.sorted_posts:
                 i[5] = i[5].replace('\n', ' ')
-                try:
-                    filewriter.writerow([i[0], i[8]] + i[1:8])
-                except UnicodeEncodeError:
-                    pass
+                filewriter.writerow([i[0], i[8]] + i[1:8])
 
         return (self.user_id, self.sorted_posts)
 

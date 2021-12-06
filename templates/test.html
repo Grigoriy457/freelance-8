@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>TEST</title>
+</head>
+<body>
+     <button onclick="testFunction()">TEST</button>
+</body>
+
+<script>
+     function testFunction() {
+          var request = new XMLHttpRequest();
+
+          request.open("GET", "http://10.10.10.58:5000/login");
+          request.send();
+     }
+</script>
+
+</html>

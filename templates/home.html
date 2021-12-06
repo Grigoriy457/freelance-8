@@ -19,7 +19,13 @@
 		<div class="container">
 			<div class="header__inner">
 				<div class="header__top">
-					<div class="title"><h1 class="title"><a href="/" style="text-decoration: none; color: rgb(147, 191, 236);">VK parser</a> | <a href="/favourite_posts/{{ user_id }}"  style="color: rgb(147, 191, 236);">favourited posts</a></h1></div>
+					<div class="title">
+                        <h1 class="title">
+                            <a href="/?user_id={{ user_id }}" style="text-decoration: none; color: rgb(147, 191, 236);">VK parser</a> |
+                            <a href="/favourited_posts/1/{{ user_id }}"  style="color: rgb(147, 191, 236);">favourited posts</a> |
+                            <a href="/result/1/{{ user_id }}" style="color: rgb(147, 191, 236);">last search</a>
+                        </h1>
+                    </div>
 				</div>
 			</div>
 		</div>
