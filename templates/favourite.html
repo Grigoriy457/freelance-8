@@ -50,6 +50,8 @@
      </style>
 
      <script>
+          var IP_HOST = "http://89.223.70.199:5000/";
+
           function param_false_function(param, user_id, page, post_id, url) {
                user_id = String(user_id);
 
@@ -61,13 +63,13 @@
 
                post = document.getElementsByClassName("param")[(post_id - 1) - ((page - 1) * 1000)];
                if (post.textContent == "★") {
-                    request.open("GET", "http://10.10.10.58:5000/unfavourite/" + user_id + "/" + page + "/" + post_id + "?from=fp&url=" + url);
+                    request.open("GET", IP_HOST + "unfavourite/" + user_id + "/" + page + "/" + post_id + "?from=fp&url=" + url);
                     request.send();
 
                     post.textContent = "☆";
                     post.style.color = "blue";
                } else {
-                    request.open("GET", "http://10.10.10.58:5000/favourite/" + user_id + "/" + page + "/" + post_id);
+                    request.open("GET", IP_HOST + "favourite/" + user_id + "/" + page + "/" + post_id);
                     request.send();
 
                     post.textContent = "★";
@@ -86,13 +88,13 @@
 
                post = document.getElementsByClassName("param")[(post_id - 1) - ((page - 1) * 1000)];
                if (post.textContent == "★") {
-                    request.open("GET", "http://10.10.10.58:5000/unfavourite/" + user_id + "/" + page + "/" + post_id + "?from=fp&url=" + url);
+                    request.open("GET", IP_HOST + "unfavourite/" + user_id + "/" + page + "/" + post_id + "?from=fp&url=" + url);
                     request.send();
 
                     post.textContent = "☆";
                     post.style.color = "blue";
                } else {
-                    request.open("GET", "http://10.10.10.58:5000/favourite/" + user_id + "/" + page + "/" + post_id);
+                    request.open("GET", IP_HOST + "favourite/" + user_id + "/" + page + "/" + post_id);
                     request.send();
 
                     post.textContent = "★";
