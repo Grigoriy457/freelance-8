@@ -50,7 +50,23 @@
      </style>
 
      <script>
+          var IP_HOST = "http://10.10.10.58:5000/";
+
+          class GetIp {
+               async ip() {
+                    let res =  await fetch('http://httpbin.org/ip');
+                    let data = await res.json();
+                    return data;
+               }
+          }
+
+          async function get_ip_function() {
+               return await new GetIp().ip();
+          }
+
           function param_false_function(param, user_id, page, post_id, url) {
+               ip_host = get_ip_function()
+
                user_id = String(user_id);
 
                if (user_id.length == 1) {
@@ -61,13 +77,13 @@
 
                post = document.getElementsByClassName("param")[(post_id - 1) - ((page - 1) * 1000)];
                if (post.textContent == "★") {
-                    request.open("GET", "http://10.10.10.58:5000/unfavourite/" + user_id + "/" + page + "/" + post_id + "?url=" + url);
+                    request.open("GET", IP_HOST + "unfavourite/" + user_id + "/" + page + "/" + post_id + "?url=" + url);
                     request.send();
 
                     post.textContent = "☆";
                     post.style.color = "blue";
                } else {
-                    request.open("GET", "http://10.10.10.58:5000/favourite/" + user_id + "/" + page + "/" + post_id);
+                    request.open("GET", IP_HOST + "favourite/" + user_id + "/" + page + "/" + post_id);
                     request.send();
 
                     post.textContent = "★";
@@ -86,13 +102,13 @@
 
                post = document.getElementsByClassName("param")[(post_id - 1) - ((page - 1) * 1000)];
                if (post.textContent == "★") {
-                    request.open("GET", "http://10.10.10.58:5000/unfavourite/" + user_id + "/" + page + "/" + post_id + "?url=" + url);
+                    request.open("GET", IP_HOST + "unfavourite/" + user_id + "/" + page + "/" + post_id + "?url=" + url);
                     request.send();
 
                     post.textContent = "☆";
                     post.style.color = "blue";
                } else {
-                    request.open("GET", "http://10.10.10.58:5000/favourite/" + user_id + "/" + page + "/" + post_id);
+                    request.open("GET", IP_HOST + "favourite/" + user_id + "/" + page + "/" + post_id);
                     request.send();
 
                     post.textContent = "★";
