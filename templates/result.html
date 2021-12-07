@@ -50,22 +50,22 @@
      </style>
 
      <script>
-          var IP_HOST = "http://89.223.70.199:5000/";
+          var IP_HOST = "";
 
-          class GetIp {
-               async ip() {
-                    let res =  await fetch('http://httpbin.org/ip');
-                    let data = await res.json();
-                    return data;
+          function setIP(json) {
+               if (json.ip == "109.252.86.173") {
+                    IP_HOST = "10.10.10.58";
+               } else {
+                    IP_HOST = "89.223.70.199";
                }
-          }
 
-          async function get_ip_function() {
-               return await new GetIp().ip();
-          }
+               console.log("Call to " + IP_HOST + " (server)");
 
+               IP_HOST = "http://" + IP_HOST + ":5000/";
+          }
+          
           function param_false_function(param, user_id, page, post_id, url) {
-               ip_host = get_ip_function()
+               // ip_host = get_ip_function()
 
                user_id = String(user_id);
 
@@ -116,6 +116,8 @@
                }
           }
      </script>
+
+     <script type="application/javascript" src="https://api.ipify.org?format=jsonp&callback=setIP"></script>
 </head>
 <body>
      <header class="header">
