@@ -5,6 +5,10 @@ import sqlite3
 import sys
 from rich.console import Console
 
+from settings import HOST
+
+
+
 app = Flask(__name__)
 posts = list()
 
@@ -146,20 +150,11 @@ def show_status_load(user_id):
 def load():
     global cursor, connection, error, list_filters
     print('/load')
-    # time.sleep(1000)
 
-    list_filters = list()
     user_id = request.args.get('user_id')
-    # user_info = cursor.execute("""SELECT * FROM "users" WHERE "user_id"='{}';""".format(user_id)).fetchone()
-    # if bool(user_info):
-    #     if user_info[1] != password:
-    #         error[int(user_id)] = 'Wrong password'
-    #         return redirect('/', code=302)
-    #     else:
-    #         error[int(user_id)] = ''
-    # else:
-    #     error[int(user_id)] = 'Wrong username'
-    #     return redirect('/', code=302)
+
+    cursor.execute("""SELECT * FROM "filters" WHERE "user_id"='{}';""".format(user_id))
+    list_filters = cursor.fetchall()
 
 
     limit = request.args.get('limit-input')
@@ -225,7 +220,7 @@ def int_result(page, user_id):
     _posts = get_all_posts(user_id)
     if _posts != list() and _posts != None:
         range_posts = range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1)))
-        return render_template('result.html', user_id=user_id, posts=_posts, len_posts=len(_posts), page=page, range_posts=range_posts, list_filters=list_filters)
+        return render_template('result.html', user_id=user_id, posts=_posts, len_posts=len(_posts), page=page, range_posts=range_posts, list_filters=list_filters, host=HOST)
     else:
         return redirect('/', code=302)
 
@@ -269,13 +264,10 @@ def do_unfavourite(user_id, page, post_id):
 def favourited_posts(page, user_id):
 
     favourited_posts = get_favourited_posts(user_id)
-    try:
-        print(favourited_posts[0])
-    except IndexError:
-        pass
+
     range_posts = range(1, ((len(favourited_posts) // 1000) + (2 if len(favourited_posts) % 1000 != 0 else 1)))
 
-    return render_template('favourite.html', user_id=user_id, favourited_posts=favourited_posts, page=page, range_posts=range_posts, len_favourited_posts=len(favourited_posts))
+    return render_template('favourite.html', user_id=user_id, favourited_posts=favourited_posts, page=page, range_posts=range_posts, len_favourited_posts=len(favourited_posts), host=HOST)
 
 
 
