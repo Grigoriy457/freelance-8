@@ -41,28 +41,15 @@ class parser():
         self.cursor.execute("""DELETE FROM "posts" WHERE "user_id"='{}';""".format(user_id))
         self.connection.commit()
 
-        # self.cursor.execute(delete_table_1.format(user_id))
-        # self.connection.commit()
-        # self.cursor.execute(delete_table_2)
-        # self.connection.commit()
-        # self.cursor.execute(create_table_1.format(user_id))
-        # self.connection.commit()
-        # self.cursor.execute(create_table_2)
-        # self.connection.commit()
-        # for i in range(51):
-        #     i = str(i)
-        #     self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_status', '0', '{}');""".format('0' + i if len(i) == 1 else i))
-        #     self.connection.commit()
-        #     self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_post', '...', '{}');""".format('0' + i if len(i) == 1 else i))
-        #     self.connection.commit()
-        #     self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_all_posts', '...', '{}');""".format('0' + i if len(i) == 1 else i))
-        #     self.connection.commit()
-        #     self.cursor.execute("""INSERT INTO "params" ("info", "status", "user_id") VALUES ('parser_time', '...', '{}');""".format('0' + i if len(i) == 1 else i))
-        #     self.connection.commit()
+        self.cursor.execute("""UPDATE "params" SET "status"='{}' WHERE "user_id"='{}' AND "info"='{}';""".format(1, user_id, "parser_status"))
+        self.connection.commit()
+        self.cursor.execute("""UPDATE "params" SET "status"='{}' WHERE "user_id"='{}' AND "info"='{}';""".format("...", user_id, "parser_post"))
+        self.connection.commit()
+        self.cursor.execute("""UPDATE "params" SET "status"='{}' WHERE "user_id"='{}' AND "info"='{}';""".format("...", user_id, "parser_all_posts"))
+        self.connection.commit()
+        self.cursor.execute("""UPDATE "params" SET "status"='{}' WHERE "user_id"='{}' AND "info"='{}';""".format("...", user_id, "parser_time"))
+        self.connection.commit()
 
-        # except sqlite3.Error as error:
-        #     print("Error connecting to sqlite\n" + str(error))
-        #     return None
 
         with open('access_tokens.txt', 'r') as access_tokens_file:
             self.access_tokens = access_tokens_file.read().split('\n')

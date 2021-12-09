@@ -4,6 +4,7 @@ from vk_parser import parser, starter
 import sqlite3
 import sys
 from rich.console import Console
+import datetime
 
 from settings import HOST
 
@@ -23,7 +24,8 @@ error = ['' for i in range(51)]
 list_filters = list()
 
 
-@app.route('/login', methods=['GET'])
+
+@app.route('/login/')
 def login():
     error = request.args.get('error')
     if error == None:
@@ -31,7 +33,8 @@ def login():
     return render_template('login.html', error=error)
 
 
-@app.route('/', methods=['GET'])
+
+@app.route('/')
 def home():
     user_id = request.args.get('user_id')
     print('USER ID:', user_id)
@@ -43,12 +46,14 @@ def home():
     return redirect('/login?error=')
 
 
-@app.route('/change_password', methods=['GET'])
+
+@app.route('/change_password/')
 def change_password():
     return render_template('change_password.html', error=error)
 
 
-@app.route('/set_new_password', methods=['GET', 'POST'])
+
+@app.route('/set_new_password/', methods=['GET', 'POST'])
 def set_new_password():
     global error
     if request.method == 'POST':
@@ -134,7 +139,7 @@ def get_favourited_posts(user_id):
 
 
 
-@app.route('/show_status_load/<string:user_id>', methods=['GET', 'POST'])
+@app.route('/show_status_load/<string:user_id>/', methods=['GET', 'POST'])
 def show_status_load(user_id):
     cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_status', user_id))
     if int(cursor.fetchone()[0]) == 1:
@@ -146,7 +151,8 @@ def show_status_load(user_id):
         return redirect(f'/result/1/{user_id}', code=302)
 
 
-@app.route('/load', methods=['GET'])
+
+@app.route('/load/')
 def load():
     global cursor, connection, error, list_filters
     print('/load')
@@ -159,13 +165,13 @@ def load():
 
     limit = request.args.get('limit-input')
     if request.args.get('likes-input__count') != '':
-        likes = [(True if request.args.get('likes-input__count') != '' else False), request.args.get('likes_select'), int(request.args.get('likes-input__count'))]
+        likes = [True, request.args.get('likes_select'), int(request.args.get('likes-input__count'))]
     else:
-        likes = [False, '', 0]
+        likes = [False, ' ', 0]
     if request.args.get('subscribers-input__count') != '':
-        subscribers = [(True if request.args.get('subscribers-input__count') != '' else False), request.args.get('subscribers_select'), int(request.args.get('subscribers-input__count'))]
+        subscribers = [True, request.args.get('subscribers_select'), int(request.args.get('subscribers-input__count'))]
     else:
-        subscribers = [False, '', 0]
+        subscribers = [False, ' ', 0]
     verified = True if request.args.get('verified-select') == 'Yes' else False
     key_word = request.args.get('key_word-input')
     stop_word = request.args.get('stop_word-input')
@@ -187,17 +193,10 @@ def load():
     print('Start time:', start_time)
     print('End time:', end_time)
 
-    list_filters.append(['Limit', limit])
-    if likes[0]:
-        list_filters.append(['Likes', (likes[1] + ' ' + str(likes[2]))])
-    if subscribers[0]:
-        list_filters.append(['Subscribers', (subscribers[1] + ' ' + str(subscribers[2]))])
-    list_filters.append(['Verified', verified])
-    list_filters.append(['Key word', key_word])
-    list_filters.append(['Pass word', stop_word])
-    if bool_time:
-        list_filters.append(['Start time', start_time])
-        list_filters.append(['End time', end_time])
+    microseconds = int(int(datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%f")) % 100)
+    date = datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%d/%m/%Y %H:%M:%S.{}".format(microseconds))
+    cursor.execute("""INSERT INTO "filters" ([date], user_id, [limit], likes, subscribers, verified, key_word, pass_word, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (date, user_id, limit, likes[1] + str(likes[2]), subscribers[1] + str(subscribers[2]), int(verified), key_word, stop_word, start_time, end_time))
+    connection.commit()
 
     if key_word != '' and limit != 0:
         if bool_time:
@@ -214,6 +213,7 @@ def load():
         return redirect('/', code=302)
 
 
+
 @app.route('/result/<int:page>/<string:user_id>/')
 def int_result(page, user_id):
     global list_filters
@@ -225,7 +225,8 @@ def int_result(page, user_id):
         return redirect('/', code=302)
 
 
-@app.route('/favourite/<string:user_id>/<int:page>/<int:post_id>')
+
+@app.route('/favourite/<string:user_id>/<int:page>/<int:post_id>/')
 def do_favourite(user_id, page, post_id):
     console.print(f'[yellow][bold][INFO]:[/bold] Now post {post_id} on page {page} has become a favorite of user {user_id}[/yellow]')
 
@@ -239,7 +240,8 @@ def do_favourite(user_id, page, post_id):
     return redirect(f'/result/{page}/{user_id}/#{post_id}', code=302)
 
 
-@app.route('/unfavourite/<string:user_id>/<int:page>/<int:post_id>')
+
+@app.route('/unfavourite/<string:user_id>/<int:page>/<int:post_id>/')
 def do_unfavourite(user_id, page, post_id):
     url = request.args.get('url')
 
@@ -260,7 +262,8 @@ def do_unfavourite(user_id, page, post_id):
         return redirect(f'/result/{page}/{user_id}#{post_id}', code=302)
 
 
-@app.route('/favourited_posts/<int:page>/<string:user_id>')
+
+@app.route('/favourited_posts/<int:page>/<string:user_id>/')
 def favourited_posts(page, user_id):
 
     favourited_posts = get_favourited_posts(user_id)
@@ -268,6 +271,27 @@ def favourited_posts(page, user_id):
     range_posts = range(1, ((len(favourited_posts) // 1000) + (2 if len(favourited_posts) % 1000 != 0 else 1)))
 
     return render_template('favourite.html', user_id=user_id, favourited_posts=favourited_posts, page=page, range_posts=range_posts, len_favourited_posts=len(favourited_posts), host=HOST)
+
+
+
+@app.route('/search_history/<int:page>/')
+def search_history(page):
+    cursor.execute("""SELECT * FROM "filters";""")
+    data = cursor.fetchall()[::-1]
+    _data = list()
+    for i in data:
+        _data.append([i[0], i[1], [
+                                    ["Limit", i[2]],
+                                    ["Likes", i[3]],
+                                    ["Subscribers", i[4]],
+                                    ["Verified", bool(i[5])],
+                                    ["Key word", i[6]],
+                                    ["Pass word", i[7]],
+                                    ["Start date", i[8]],
+                                    ["End date", i[9]]
+                                  ]])
+
+    return render_template('search_history.html', page=page, history_data=_data)
 
 
 
