@@ -108,7 +108,7 @@
           <div class="container">
                <div class="header__inner">
                     <h1 class="title">
-                         <a href="/?user_id={{ user_id }}" style="color: rgb(147, 191, 236);">VK parser</a> (favourit posts) |
+                         <a href="/?user_id={{ user_id }}" style="color: rgb(147, 191, 236);">VK parser</a> (favourite posts) |
                          <a href="/result/1/{{ user_id }}" style="color: rgb(147, 191, 236);">last search</a> |
                          <a href="/search_history/1/{{ user_id }}" style="color: rgb(147, 191, 236);">search history</a>
                     </h1>
@@ -127,14 +127,14 @@
           <h1>
                <b style="color: rgb(41 129 219);">All posts</b>: {{ len_favourited_posts }}
           </h1>
-          {% if len_favourited_posts != 0 %}
+          <!-- {% if len_favourited_posts != 0 %}
                <div style="margin: 16px 0 0;">
                     <a href="/static/users/{{ user_id }}/favourited_posts.csv" download="favourited_posts.csv" style="display: flex;">
                          <img src="/static/images/excel.png" alt="excel icon" style="width: 48px; height: 48px;">
                          <p>Download csv file</p>
                     </a>
                </div>
-          {% endif %}
+          {% endif %} -->
           <p>
                {% for i in favourited_posts[((page - 1) * 1000):(page * 1000)] %}
                     <fieldset id="{{ i[1] }}">

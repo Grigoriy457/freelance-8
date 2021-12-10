@@ -33,7 +33,7 @@ class parser():
         delete_table_1 = """DROP TABLE IF EXISTS posts;"""
         delete_table_2 = """DROP TABLE IF EXISTS params;"""
 
-        self.connection = sqlite3.connect('db.db', check_same_thread=False)
+        self.connection = sqlite3.connect('static/db.db', check_same_thread=False)
         self.cursor = self.connection.cursor()
 
         print("SQLite connected")
@@ -222,9 +222,7 @@ class parser():
 
 
                 if self.FILTERS['likes'][0]:
-                    if self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '>=' and self.likes >= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2]:
-                        pass
-                    else:
+                    if not ((self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '≥' and self.likes >= self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2])):
                         continue
 
                 if self.FILTERS['stop_word'] != list():
@@ -237,15 +235,11 @@ class parser():
                         continue
 
                 if not (self.FILTERS['start_date'] == '' or self.FILTERS['stop_date'] == ''):
-                    if self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']:
-                        pass
-                    else:
+                    if not (self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']):
                         continue
 
                 if self.FILTERS['verified']:
-                    if self.verified == 1:
-                        pass
-                    else:
+                    if self.verified != 1:
                         continue
 
 
@@ -292,9 +286,7 @@ class parser():
 
 
                 if self.FILTERS['subscribers'][0]:
-                    if self.FILTERS['subscribers'][1] == '>' and self.subscribers > self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '>=' and self.subscribers >= self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '=' and self.subscribers == self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '<=' and self.subscribers <= self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '<' and self.ubscribers < self.FILTERS['subscribers'][2]:
-                        pass
-                    else:
+                    if not ((self.FILTERS['subscribers'][1] == '>' and self.subscribers > self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '≥' and self.subscribers >= self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '=' and self.subscribers == self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '<=' and self.subscribers <= self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '<' and self.ubscribers < self.FILTERS['subscribers'][2])):
                         continue
 
                 # print(j)

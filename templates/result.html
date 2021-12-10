@@ -111,7 +111,7 @@
                <div class="header__inner">
                     <h1 class="title">
                          <a href="/?user_id={{ user_id }}" style="color: rgb(147, 191, 236);">VK parser</a> (posts) |
-                         <a href="/favourited_posts/1/{{ user_id }}"  style="color: rgb(147, 191, 236);">favourit posts</a> |
+                         <a href="/favourited_posts/1/{{ user_id }}"  style="color: rgb(147, 191, 236);">favourite posts</a> |
                          <a href="/search_history/1/{{ user_id }}" style="color: rgb(147, 191, 236);">search history</a>
                     </h1>
                </div>
@@ -131,7 +131,9 @@
                <b style="color: rgb(41 129 219);">Filters</b>:
                <ul style="list-style: none; font-size: 21px; margin-top: auto;">
                     {% for i in list_filters %}
-                         <li><b style="color: rgb(41 129 219);">{{ i[0] }}</b>: {{ i[1] }}</li>
+                         {% if i[1] != "" %}
+                              <li><b style="color: rgb(41 129 219);">{{ i[0] }}</b>: {{ i[1] }}</li>
+                         {% endif %}
                     {% endfor %}
                </ul>
           </h1>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+     <title>VK parser (admin panel)</title>
+
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
+
+     <link rel="icon" type="image/png" href="/static/images/favicon.png"/>
+
+     <style type="text/css">
+          body {
+               font-family: 'Quicksand', sans-serif;
+          }
+
+          a.page {
+               display: inline-block;
+               width: 30px;
+               height: 30px;
+               border-radius: 50%;
+               color: rgb(0 126 255);
+               background-color: rgb(0 126 255 / 54%);
+               text-align: center;
+               font-weight: bold;
+               vertical-align: middle;
+               line-height: 28px;
+               text-decoration: none;
+          }
+
+          h1 {
+               font-size: 35px;
+          }
+
+          h1.title {
+               color: rgb(147, 191, 236);
+               font-size: 55px;
+               line-height: 48px;
+               font-weight: 100;
+          }
+     </style>
+</head>
+<body>
+     <header>
+		<div class="container">
+			<div class="header__inner">
+				<div class="header__top">
+					<div class="title">
+                        <h1 class="title">
+                            <a href="/" style="text-decoration: none; color: rgb(147, 191, 236);">VK parser</a> |
+                            <a href="/"  style="color: rgb(147, 191, 236);">favourite posts</a> |
+                            <a href="/" style="color: rgb(147, 191, 236);">last search</a> |
+                            <a href="/search_history/1" style="color: rgb(147, 191, 236);">search history</a>
+                        </h1>
+                    </div>
+				</div>
+			</div>
+		</div>
+	</header>
+     <main style="margin-top: 50px; margin-left: 20px;">
+          <div style="margin: 16px 0 0;">
+               <a href="/static/db.db" download="database ({{ date }}).db" style="display: flex; position: relative;">
+                    <img src="/static/images/database.png" alt="db icon" style="width: 48px; height: 48px;">
+                    <p style="font-size: 40px; margin: 0 0 0 5px; position: absolute; top: -2px; left: 48px;">Download database</p>
+               </a>
+          </div>
+     </main>
+</body>
+</html>

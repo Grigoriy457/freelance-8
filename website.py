@@ -15,7 +15,7 @@ posts = list()
 
 status = 'one_console'
 
-connection = sqlite3.connect('db.db', check_same_thread=False)
+connection = sqlite3.connect('static/db.db', check_same_thread=False)
 cursor = connection.cursor()
 
 console = Console()
@@ -177,7 +177,7 @@ def load():
         subscribers = [False, ' ', 0]
     verified = True if request.args.get('verified-select') == 'Yes' else False
     key_word = request.args.get('key_word-input')
-    stop_word = request.args.get('stop_word-input').split(', ')
+    stop_word = [i for i in request.args.get('stop_word-input').split(', ') if i != ""]
     bool_time = True if request.args.get('date-checkbox') == 'YES' else False
     if bool_time:
         start_time = request.args.get('start_time')
@@ -196,7 +196,7 @@ def load():
     print('Start time:', start_time)
     print('End time:', end_time)
 
-    microseconds = int(int(datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%f")) % 100)
+    microseconds = int(int(datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%f")) % 10)
     date = datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%d/%m/%Y %H:%M:%S.{}".format(microseconds))
     cursor.execute("""INSERT INTO "filters" ([date], user_id, [limit], likes, subscribers, verified, key_word, pass_word, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (date, user_id, limit, likes[1] + str(likes[2]), subscribers[1] + str(subscribers[2]), int(verified), key_word, ", ".join(stop_word), start_time, end_time))
     connection.commit()
@@ -219,9 +219,20 @@ def load():
 
 @app.route('/result/<int:page>/<string:user_id>/')
 def int_result(page, user_id):
-    global list_filters
     cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_status', user_id))
     if int(cursor.fetchone()[0]) == 0:
+        cursor.execute("""SELECT * FROM "filters" WHERE "user_id" = '{}';""".format(user_id))
+        _list_filters = cursor.fetchall()[-1]
+        list_filters = [
+            ["Limit", _list_filters[2]],
+            ["Likes", "≥" + _list_filters[3][1] if _list_filters[3][0] == " " else _list_filters[3]],
+            ["Subscribers", "≥" + _list_filters[4][1] if _list_filters[4][0] == " " else _list_filters[4]],
+            ["Verified", _list_filters[5]],
+            ["Key_word", _list_filters[6]],
+            ["Pass_word", _list_filters[7]],
+            ["Start_time", _list_filters[8]],
+            ["End_time", _list_filters[9]],
+        ]
         _posts = get_all_posts(user_id)
         if _posts != list() and _posts != None:
             range_posts = range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1)))
@@ -326,6 +337,13 @@ def search_history_2(page):
                                   ]])
 
     return render_template('search_history.html', page=page, history_data=_data, user_id="")
+
+
+
+@app.route("/admin/")
+def admin():
+    date = datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%d.%m.%Y")
+    return render_template("admin.html", date=date, host=HOST)
 
 
 
