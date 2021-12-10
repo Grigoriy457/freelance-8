@@ -220,6 +220,35 @@ class parser():
 
                 self.reposts = j['reposts']['count']
 
+
+                if self.FILTERS['likes'][0]:
+                    if self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '>=' and self.likes >= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2]:
+                        pass
+                    else:
+                        continue
+
+                if self.FILTERS['stop_word'] != list():
+                    con = False
+                    for i in self.FILTERS['stop_word']:
+                        if i.lower() in self.text.lower():
+                            con = True
+                            break
+                    if con:
+                        continue
+
+                if not (self.FILTERS['start_date'] == '' or self.FILTERS['stop_date'] == ''):
+                    if self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']:
+                        pass
+                    else:
+                        continue
+
+                if self.FILTERS['verified']:
+                    if self.verified == 1:
+                        pass
+                    else:
+                        continue
+
+
                 self._id = int(j['owner_id'])
                 if self._id < 0:
                     while True:
@@ -262,30 +291,8 @@ class parser():
                                 self.console.print('[red bold]<ERROR:>[/red bold] [yellow]', response)
 
 
-                if self.FILTERS['likes'][0]:
-                    if self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '>=' and self.likes >= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2] or self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2]:
-                        pass
-                    else:
-                        continue
-
                 if self.FILTERS['subscribers'][0]:
                     if self.FILTERS['subscribers'][1] == '>' and self.subscribers > self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '>=' and self.subscribers >= self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '=' and self.subscribers == self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '<=' and self.subscribers <= self.FILTERS['subscribers'][2] or self.FILTERS['subscribers'][1] == '<' and self.ubscribers < self.FILTERS['subscribers'][2]:
-                        pass
-                    else:
-                        continue
-
-                if self.FILTERS['stop_word'] != '':
-                    if self.FILTERS['stop_word'].lower() in self.text.lower():
-                        continue
-
-                if not (self.FILTERS['start_date'] == '' or self.FILTERS['stop_date'] == ''):
-                    if self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']:
-                        pass
-                    else:
-                        continue
-
-                if self.FILTERS['verified']:
-                    if self.verified == 1:
                         pass
                     else:
                         continue

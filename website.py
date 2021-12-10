@@ -143,9 +143,12 @@ def get_favourited_posts(user_id):
 def show_status_load(user_id):
     cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_status', user_id))
     if int(cursor.fetchone()[0]) == 1:
-        _time = cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_time', user_id)).fetchone()[0]
-        now_post = cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_post', user_id)).fetchone()[0]
-        all_post = cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_all_posts', user_id)).fetchone()[0]
+        cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_time', user_id))
+        _time = cursor.fetchone()[0]
+        cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_post', user_id))
+        now_post = cursor.fetchone()[0]
+        cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_all_posts', user_id))
+        all_post = cursor.fetchone()[0]
         return render_template('load.html', time=_time, now_post=now_post, all_post=all_post, user_id=user_id)
     else:
         return redirect(f'/result/1/{user_id}', code=302)
@@ -174,7 +177,7 @@ def load():
         subscribers = [False, ' ', 0]
     verified = True if request.args.get('verified-select') == 'Yes' else False
     key_word = request.args.get('key_word-input')
-    stop_word = request.args.get('stop_word-input')
+    stop_word = request.args.get('stop_word-input').split(', ')
     bool_time = True if request.args.get('date-checkbox') == 'YES' else False
     if bool_time:
         start_time = request.args.get('start_time')
@@ -195,7 +198,7 @@ def load():
 
     microseconds = int(int(datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%f")) % 100)
     date = datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%d/%m/%Y %H:%M:%S.{}".format(microseconds))
-    cursor.execute("""INSERT INTO "filters" ([date], user_id, [limit], likes, subscribers, verified, key_word, pass_word, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (date, user_id, limit, likes[1] + str(likes[2]), subscribers[1] + str(subscribers[2]), int(verified), key_word, stop_word, start_time, end_time))
+    cursor.execute("""INSERT INTO "filters" ([date], user_id, [limit], likes, subscribers, verified, key_word, pass_word, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (date, user_id, limit, likes[1] + str(likes[2]), subscribers[1] + str(subscribers[2]), int(verified), key_word, ", ".join(stop_word), start_time, end_time))
     connection.commit()
 
     if key_word != '' and limit != 0:
@@ -217,12 +220,22 @@ def load():
 @app.route('/result/<int:page>/<string:user_id>/')
 def int_result(page, user_id):
     global list_filters
-    _posts = get_all_posts(user_id)
-    if _posts != list() and _posts != None:
-        range_posts = range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1)))
-        return render_template('result.html', user_id=user_id, posts=_posts, len_posts=len(_posts), page=page, range_posts=range_posts, list_filters=list_filters, host=HOST)
+    cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_status', user_id))
+    if int(cursor.fetchone()[0]) == 0:
+        _posts = get_all_posts(user_id)
+        if _posts != list() and _posts != None:
+            range_posts = range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1)))
+            return render_template('result.html', user_id=user_id, posts=_posts, len_posts=len(_posts), page=page, range_posts=range_posts, list_filters=list_filters, host=HOST)
+        else:
+            return redirect('/', code=302)
     else:
-        return redirect('/', code=302)
+        cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_time', user_id))
+        _time = cursor.fetchone()[0]
+        cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_post', user_id))
+        now_post = cursor.fetchone()[0]
+        cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_all_posts', user_id))
+        all_post = cursor.fetchone()[0]
+        return render_template('load.html', time=_time, now_post=now_post, all_post=all_post, user_id=user_id)
 
 
 
@@ -274,8 +287,8 @@ def favourited_posts(page, user_id):
 
 
 
-@app.route('/search_history/<int:page>/')
-def search_history(page):
+@app.route('/search_history/<int:page>/<string:user_id>/')
+def search_history(page, user_id):
     cursor.execute("""SELECT * FROM "filters";""")
     data = cursor.fetchall()[::-1]
     _data = list()
@@ -291,7 +304,28 @@ def search_history(page):
                                     ["End date", i[9]]
                                   ]])
 
-    return render_template('search_history.html', page=page, history_data=_data)
+    return render_template('search_history.html', page=page, history_data=_data, user_id=user_id)
+
+
+
+@app.route('/search_history/<int:page>/')
+def search_history_2(page):
+    cursor.execute("""SELECT * FROM "filters";""")
+    data = cursor.fetchall()[::-1]
+    _data = list()
+    for i in data:
+        _data.append([i[0], i[1], [
+                                    ["Limit", i[2]],
+                                    ["Likes", i[3]],
+                                    ["Subscribers", i[4]],
+                                    ["Verified", bool(i[5])],
+                                    ["Key word", i[6]],
+                                    ["Pass word", i[7]],
+                                    ["Start date", i[8]],
+                                    ["End date", i[9]]
+                                  ]])
+
+    return render_template('search_history.html', page=page, history_data=_data, user_id="")
 
 
 
@@ -303,5 +337,4 @@ def test():
 
 if __name__ == '__main__':
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-    print('run')
     app.run(host='0.0.0.0')
