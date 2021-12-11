@@ -3,7 +3,7 @@
      <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <meta http-equiv="Refresh" content="5">
+          <meta http-equiv="Refresh" content="{{ auto_update }}">
 
           <title>VK parser (loading ...)</title>
 
@@ -27,11 +27,11 @@
           </header>
           <main>
                <h2 class="subtitle">Remaining about <span style="color: rgb(64, 179, 255);">{{ time }}</span> seconds <span style="color: rgb(64, 179, 255);">({{ now_post }}/{{ all_post }})</span></h2>
-               <!-- <form action="/show_status_load/{{ user_id }}" method="GET">
+               <form action="/show_status_load/{{ user_id }}" method="GET">
                     <p>
                          <button type="submit" class="button">Submit</button>
                     </p>
-               </form> -->
+               </form>
           </main>
      </body>
 </html>

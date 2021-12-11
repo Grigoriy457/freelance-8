@@ -6,7 +6,19 @@ import sys
 from rich.console import Console
 import datetime
 
-from settings import HOST
+from settings import TYPE, SERVER_HOST, DEV_HOST, SERVER_AUTO_UPDATE, DEV_AUTO_UPDATE
+
+
+
+if TYPE == "SERVER":
+    HOST = SERVER_HOST
+    AUTO_UPDATE = SERVER_AUTO_UPDATE
+elif TYPE == "DEV":
+    HOST = DEV_HOST
+    AUTO_UPDATE = DEV_AUTO_UPDATE
+else:
+    Console().print(f'[red]Invalid value of variable TYPE (now: "{TYPE}")[/red]')
+    sys.exit()
 
 
 
@@ -149,7 +161,7 @@ def show_status_load(user_id):
         now_post = cursor.fetchone()[0]
         cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_all_posts', user_id))
         all_post = cursor.fetchone()[0]
-        return render_template('load.html', time=_time, now_post=now_post, all_post=all_post, user_id=user_id)
+        return render_template('load.html', time=_time, now_post=now_post, all_post=all_post, user_id=user_id, auto_update=AUTO_UPDATE)
     else:
         return redirect(f'/result/1/{user_id}', code=302)
 
