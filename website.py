@@ -53,8 +53,10 @@ def home():
     if user_id not in ['', None]:
         if not (len(user_id) == 2 and 0 <= int(user_id) <= 50):
             return redirect('/login?error=Wrong+user+id+%28from+00+to+50%29') # Wrong user id (from 00 to 50)
-        if user_id != None and user_id != '':
-            return render_template('home.html', error=error, user_id=user_id)
+        cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_status', user_id))
+        if int(cursor.fetchone()[0]) == 1:
+            return redirect(f'/show_status_load/{user_id}', code=302)
+        return render_template('home.html', error=error, user_id=user_id)
     return redirect('/login?error=')
 
 
@@ -173,6 +175,10 @@ def load():
     print('/load')
 
     user_id = request.args.get('user_id')
+
+    cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_status', user_id))
+    if int(cursor.fetchone()[0]) == 1:
+        return redirect(f'/show_status_load/{user_id}', code=302)
 
     cursor.execute("""SELECT * FROM "filters" WHERE "user_id"='{}';""".format(user_id))
     list_filters = cursor.fetchall()

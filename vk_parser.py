@@ -238,10 +238,6 @@ class parser():
                     if not (self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']):
                         continue
 
-                if self.FILTERS['verified']:
-                    if self.verified != 1:
-                        continue
-
 
                 self._id = int(j['owner_id'])
                 if self._id < 0:
@@ -272,7 +268,7 @@ class parser():
                         try:
                             self.subscribers = response['response'][0]['followers_count']
                             self.verified = response['response'][0]['verified']
-                            self.title = response['response'][0]['first_name'] + response['response'][0]['last_name']
+                            self.title = response['response'][0]['first_name'] + " " + response['response'][0]['last_name']
                             break
                         except KeyError:
                             try:
@@ -285,9 +281,17 @@ class parser():
                                 self.console.print('[red bold]<ERROR:>[/red bold] [yellow]', response)
 
 
+
                 if self.FILTERS['subscribers'][0]:
                     if not ((self.FILTERS['subscribers'][1] == '>' and self.subscribers > self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '≥' and self.subscribers >= self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '=' and self.subscribers == self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '<=' and self.subscribers <= self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '<' and self.ubscribers < self.FILTERS['subscribers'][2])):
                         continue
+
+
+
+                if self.FILTERS['verified']:
+                    if self.verified != 1:
+                        continue
+
 
                 # print(j)
                 img_or_video = list()
@@ -301,7 +305,7 @@ class parser():
                     except KeyError:
                         pass
 
-                post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), int(self.subscribers), self.text, img_or_video, int(self._index + 1), self.title]
+                post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), self.subscribers, self.text, img_or_video, int(self._index + 1), self.title]
                 # print(post)
                 text = ''
                 for j in post[5]:
