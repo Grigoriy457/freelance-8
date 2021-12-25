@@ -216,7 +216,7 @@ def load():
 
     microseconds = int(int(datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%f")) % 10)
     date = datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%d/%m/%Y %H:%M:%S.{}".format(microseconds))
-    cursor.execute("""INSERT INTO "filters" ([date], user_id, [limit], likes, subscribers, verified, key_word, pass_word, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (date, user_id, limit, likes[1] + str(likes[2]), subscribers[1] + str(subscribers[2]), int(verified), key_word, ", ".join(stop_word), start_time, end_time))
+    cursor.execute("""INSERT INTO "filters" ([date], user_id, [limit], likes, subscribers, verified, key_word, pass_word, start_time, end_time, canceled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (date, user_id, limit, likes[1] + str(likes[2]), subscribers[1] + str(subscribers[2]), int(verified), key_word, ", ".join(stop_word), start_time, end_time, False))
     connection.commit()
 
     if key_word != '' and limit != 0:
@@ -322,7 +322,7 @@ def search_history(page, user_id):
     data = cursor.fetchall()[::-1]
     _data = list()
     for i in data:
-        _data.append([i[0], i[1], [
+        _data.append([i[0], i[1], i[10], [
                                     ["Limit", i[2]],
                                     ["Likes", i[3]],
                                     ["Subscribers", i[4]],
@@ -332,6 +332,7 @@ def search_history(page, user_id):
                                     ["Start date", i[8]],
                                     ["End date", i[9]]
                                   ]])
+    print(_data)
 
     cursor.execute("""SELECT * FROM "params" WHERE "user_id"='{}' AND "info"='parser_status';""".format(user_id))
     is_parsing = int(cursor.fetchone()[1])
@@ -363,8 +364,14 @@ def search_history_2(page):
 
 @app.route('/stop_parsing/<string:user_id>/')
 def stop_parsing(user_id):
-    cursor.execute("""UPDATE "params" SET status = ? WHERE "user_id"='{}' AND "info"='{}';""".format(user_id, 'parser_status'), (0,))
+    cursor.execute("""UPDATE "params" SET "status" = ? WHERE "user_id"='{}' AND "info"='{}';""".format(user_id, 'parser_status'), (0,))
     connection.commit()
+    cursor.execute("""SELECT * FROM "filters" WHERE "user_id"='{}';""".format(user_id))
+    data = cursor.fetchall()
+    if bool(data):
+        row = data[-1]
+        cursor.execute("""UPDATE "filters" SET "canceled" = ? WHERE "user_id"='{}' AND "date"='{}';""".format(user_id, row[0]), (1,))
+        connection.commit()
     return ""
 
 

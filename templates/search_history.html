@@ -251,7 +251,8 @@
                     document.body.style.overflow = 'visible';
                     document.querySelector('#openModal').style.marginLeft = '0px';
 
-                    document.getElementsByClassName("now_parsing")[0].style.display = "none"
+                    document.getElementsByClassName("now_parsing")[0].style.display = "none";
+                    document.getElementsByClassName("canceled_text")[0].style.display = "contents";
                });
           });
      </script>
@@ -302,11 +303,18 @@
                {% for i in history_data[((page - 1) * 1000):(page * 1000)] %}
                     <fieldset style="margin-bottom: 15px;">
                          <legend>
-                              <b style="font-size: 22px;">User id: {{ i[1] }} | Date: {{ i[0] }}</b>
+                              <b style="font-size: 22px;">
+                                   User id: {{ i[1] }} | Date: {{ i[0] }}
+                                   {% if i[2] %}
+                                        <span style="color: red;">(canceled)</span>
+                                   {% else %}
+                                        <span class="canceled_text" style="display: none; color: red;">(canceled)</span>
+                                   {% endif %}
+                              </b>
                          </legend>
 
                          <ul style="list-style: none; font-size: 20px; margin: auto;">
-                              {% for j in i[2] %}
+                              {% for j in i[3] %}
                                    {% if j[1] != "" %}
                                         {% if (not (j[0] == "Likes" and j[1] == " 0")) and (not (j[0] == "Subscribers" and j[1] == " 0")) %}
                                              <li><b style="color: rgb(41 129 219);">{{ j[0] }}</b>: {{ j[1] }}</li>
