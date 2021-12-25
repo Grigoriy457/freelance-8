@@ -32,14 +32,13 @@ cursor = connection.cursor()
 
 console = Console()
 
-error = ['' for i in range(51)]
 list_filters = list()
 
 
 
 @app.route('/login/')
 def login():
-    error = request.args.get('error')
+    error = request.args.get('error', '')
     if error == None:
         error = ''
     return render_template('login.html', error=error)
@@ -49,6 +48,7 @@ def login():
 @app.route('/')
 def home():
     user_id = request.args.get('user_id')
+    error = request.args.get('error')
     print('USER ID:', user_id)
     if user_id not in ['', None]:
         if not (len(user_id) == 2 and 0 <= int(user_id) <= 50):
@@ -63,13 +63,13 @@ def home():
 
 @app.route('/change_password/')
 def change_password():
+    error = request.args.get('error', '')
     return render_template('change_password.html', error=error)
 
 
 
 @app.route('/set_new_password/', methods=['GET', 'POST'])
 def set_new_password():
-    global error
     if request.method == 'POST':
         user_id = request.form.get('id-input', '')
         old_password = request.form.get('old_password-input', '')
@@ -92,7 +92,7 @@ def set_new_password():
                     return redirect('/', code=302)
         else:
             error[int(user_id)] = 'Wrong username'
-            return redirect('/change_password', code=302)
+            return redirect('/change_password?error=' + error, code=302)
     else:
         return redirect('/', code=302)
 
@@ -171,7 +171,7 @@ def show_status_load(user_id):
 
 @app.route('/load/')
 def load():
-    global cursor, connection, error, list_filters
+    global cursor, connection
     print('/load')
 
     user_id = request.args.get('user_id')
@@ -231,7 +231,7 @@ def load():
             parser(user_id=user_id, limit=limit, likes=likes, subscribers=subscribers, verified=verified, key_word=key_word, stop_word=stop_word, start_date=start_time, stop_date=end_time).parser_function()
             return redirect(f'/result/1/{user_id}', code=302)
     else:
-        return redirect('/', code=302)
+        return redirect('/?user_id=' + user_id, code=302)
 
 
 
@@ -256,7 +256,7 @@ def int_result(page, user_id):
             range_posts = range(1, ((len(_posts) // 1000) + (2 if len(_posts) % 1000 != 0 else 1)))
             return render_template('result.html', user_id=user_id, posts=_posts, len_posts=len(_posts), page=page, range_posts=range_posts, list_filters=list_filters, host=HOST)
         else:
-            return redirect('/', code=302)
+            return redirect('/?user_id=' + user_id, code=302)
     else:
         cursor.execute("""SELECT status FROM params WHERE info = ? AND user_id = ?;""", ('parser_time', user_id))
         _time = cursor.fetchone()[0]
@@ -333,7 +333,10 @@ def search_history(page, user_id):
                                     ["End date", i[9]]
                                   ]])
 
-    return render_template('search_history.html', page=page, history_data=_data, user_id=user_id)
+    cursor.execute("""SELECT * FROM "params" WHERE "user_id"='{}' AND "info"='parser_status';""".format(user_id))
+    is_parsing = int(cursor.fetchone()[1])
+
+    return render_template('search_history.html', page=page, history_data=_data, user_id=user_id, is_parsing=bool(is_parsing), host=HOST)
 
 
 
@@ -355,6 +358,14 @@ def search_history_2(page):
                                   ]])
 
     return render_template('search_history.html', page=page, history_data=_data, user_id="")
+
+
+
+@app.route('/stop_parsing/<string:user_id>/')
+def stop_parsing(user_id):
+    cursor.execute("""UPDATE "params" SET status = ? WHERE "user_id"='{}' AND "info"='{}';""".format(user_id, 'parser_status'), (0,))
+    connection.commit()
+    return ""
 
 
 

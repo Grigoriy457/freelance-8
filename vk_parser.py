@@ -98,9 +98,16 @@ class parser():
         self.start = timer()
         _continue = True
 
+        is_stop_parsing = False
+
         with self.console.status("[bold green]Parsind data...") as self.status:
             self.counter = 0
             while True:
+                self.cursor.execute("""SELECT * FROM "params" WHERE "user_id"='{}' AND "info"='parser_status';""".format(self.user_id))
+                if not bool(int(self.cursor.fetchone()[1])):
+                    is_stop_parsing = True
+                    break
+
                 self.counter += 1
 
                 self.console.print(f'[yellow]Index: [bold]{self.counter}[/bold][yellow]')
@@ -187,187 +194,196 @@ class parser():
         self.console.print('[cyan]Parsing from VK completed successfully (', round(self.end - self.start, 2), '[bold cyan]sec[/bold cyan] [cyan])!')
         print()
 
+        if not is_stop_parsing:
+            print(datetime.datetime.utcfromtimestamp(self.posts[-1]['date']))
+            self.posts = self.posts[:self.LIMIT]
+            self.start = timer()
+            self._index = 0
+            self.index = 0
 
-        print(datetime.datetime.utcfromtimestamp(self.posts[-1]['date']))
-        self.posts = self.posts[:self.LIMIT]
-        self.start = timer()
-        self._index = 0
-        self.index = 0
+            self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(len(self.posts)), 'parser_all_posts', self.user_id))
+            self.connection.commit()
 
-        self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(len(self.posts)), 'parser_all_posts', self.user_id))
-        self.connection.commit()
+            # sys.exit()
+            self.access_token_index = 0
 
-        # sys.exit()
-        self.access_token_index = 0
+            with self.console.status("[bold green]Scaning data...") as self.status:
+                index = 0
+                for j in self.posts:
+                    self.start_time = timer()
 
-        with self.console.status("[bold green]Scaning data...") as self.status:
-            for j in self.posts:
-                self.start_time = timer()
-
-                self.console.log(f"[yellow]Scaning post [bold]{self.index + 1}/{len(self.posts)}[/bold] complete[/yellow]")
-                self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(self.index + 1), 'parser_post', self.user_id))
-                self.connection.commit()
-                self.index += 1
-
-                if j['post_type'] != 'post':
-                    continue
-
-                self.text = j['text']
-
-                self.date = j['date']
-
-                self.likes = j['likes']['count']
-
-                self.reposts = j['reposts']['count']
-
-
-                if self.FILTERS['likes'][0]:
-                    if not ((self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '≥' and self.likes >= self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2])):
-                        continue
-
-                if self.FILTERS['stop_word'] != list():
-                    con = False
-                    for i in self.FILTERS['stop_word']:
-                        if i.lower() in self.text.lower():
-                            con = True
+                    index += 1
+                    if index % 25 == 0:
+                        self.cursor.execute("""SELECT * FROM "params" WHERE "user_id"='{}' AND "info"='parser_status';""".format(self.user_id))
+                        if not bool(int(self.cursor.fetchone()[1])):
                             break
-                    if con:
+
+                    self.console.log(f"[yellow]Scaning post [bold]{self.index + 1}/{len(self.posts)}[/bold] complete[/yellow]")
+                    self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(self.index + 1), 'parser_post', self.user_id))
+                    self.connection.commit()
+                    self.index += 1
+
+                    if j['post_type'] != 'post':
                         continue
 
-                if not (self.FILTERS['start_date'] == '' or self.FILTERS['stop_date'] == ''):
-                    if not (self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']):
-                        continue
+                    self.text = j['text']
+
+                    self.date = j['date']
+
+                    self.likes = j['likes']['count']
+
+                    self.reposts = j['reposts']['count']
 
 
-                self._id = int(j['owner_id'])
-                if self._id < 0:
-                    while True:
-                        time.sleep(0.1)
-                        response = requests.get(f'http://api.vk.com/method/groups.getById?lang=ru&group_id={abs(self._id)}&fields=members_count,verified&access_token={self.access_tokens[self.access_token_index]}&v={self.v}').json()
-                        try:
-                            self.subscribers = response['response'][0]['members_count']
-                            self.verified = response['response'][0]['verified']
-                            self.title = response['response'][0]['name']
-                            break
-                        except KeyError:
-                            if response['error']['error_msg'] == 'Too many requests per second':
-                                continue
-                            elif response['error']['error_msg'] == 'Rate limit reached':
-                                if self.access_token_index == len(self.access_tokens) - 1:
-                                    self.access_token_index = 0
-                                else:
-                                    self.access_token_index += 1
-                                continue
-                            else:
-                                print(response)
+                    if self.FILTERS['likes'][0]:
+                        if not ((self.FILTERS['likes'][1] == '>' and self.likes > self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '≥' and self.likes >= self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '=' and self.likes == self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '<=' and self.likes <= self.FILTERS['likes'][2]) or (self.FILTERS['likes'][1] == '<' and self.likes < self.FILTERS['likes'][2])):
+                            continue
+
+                    if self.FILTERS['stop_word'] != list():
+                        con = False
+                        for i in self.FILTERS['stop_word']:
+                            if i.lower() in self.text.lower():
+                                con = True
                                 break
-                else:
-                    while True:
-                        time.sleep(0.1)
-                        response = requests.get(f'http://api.vk.com/method/users.get?lang=ru&fields=followers_count,verified&access_token={self.access_tokens[self.access_token_index]}&v={self.v}&user_ids={self._id}').json()
-                        try:
-                            self.subscribers = response['response'][0]['followers_count']
-                            self.verified = response['response'][0]['verified']
-                            self.title = response['response'][0]['first_name'] + " " + response['response'][0]['last_name']
-                            break
-                        except KeyError:
+                        if con:
+                            continue
+
+                    if not (self.FILTERS['start_date'] == '' or self.FILTERS['stop_date'] == ''):
+                        if not (self.FILTERS['stop_date'] >= self.date >= self.FILTERS['start_date']):
+                            continue
+
+
+                    self._id = int(j['owner_id'])
+                    if self._id < 0:
+                        while True:
+                            time.sleep(0.1)
+                            response = requests.get(f'http://api.vk.com/method/groups.getById?lang=ru&group_id={abs(self._id)}&fields=members_count,verified&access_token={self.access_tokens[self.access_token_index]}&v={self.v}').json()
                             try:
+                                self.subscribers = response['response'][0]['members_count']
+                                self.verified = response['response'][0]['verified']
+                                self.title = response['response'][0]['name']
+                                break
+                            except KeyError:
                                 if response['error']['error_msg'] == 'Too many requests per second':
+                                    continue
+                                elif response['error']['error_msg'] == 'Rate limit reached':
+                                    if self.access_token_index == len(self.access_tokens) - 1:
+                                        self.access_token_index = 0
+                                    else:
+                                        self.access_token_index += 1
                                     continue
                                 else:
                                     print(response)
                                     break
+                    else:
+                        while True:
+                            time.sleep(0.1)
+                            response = requests.get(f'http://api.vk.com/method/users.get?lang=ru&fields=followers_count,verified&access_token={self.access_tokens[self.access_token_index]}&v={self.v}&user_ids={self._id}').json()
+                            try:
+                                self.subscribers = response['response'][0]['followers_count']
+                                self.verified = response['response'][0]['verified']
+                                self.title = response['response'][0]['first_name'] + " " + response['response'][0]['last_name']
+                                break
                             except KeyError:
-                                self.console.print('[red bold]<ERROR:>[/red bold] [yellow]', response)
+                                try:
+                                    if response['error']['error_msg'] == 'Too many requests per second':
+                                        continue
+                                    else:
+                                        print(response)
+                                        break
+                                except KeyError:
+                                    self.console.print('[red bold]<ERROR:>[/red bold] [yellow]', response)
 
 
 
-                if self.FILTERS['subscribers'][0]:
-                    if not ((self.FILTERS['subscribers'][1] == '>' and self.subscribers > self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '≥' and self.subscribers >= self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '=' and self.subscribers == self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '<=' and self.subscribers <= self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '<' and self.ubscribers < self.FILTERS['subscribers'][2])):
-                        continue
+                    if self.FILTERS['subscribers'][0]:
+                        if not ((self.FILTERS['subscribers'][1] == '>' and self.subscribers > self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '≥' and self.subscribers >= self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '=' and self.subscribers == self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '<=' and self.subscribers <= self.FILTERS['subscribers'][2]) or (self.FILTERS['subscribers'][1] == '<' and self.ubscribers < self.FILTERS['subscribers'][2])):
+                            continue
 
 
 
-                if self.FILTERS['verified']:
-                    if self.verified != 1:
-                        continue
+                    if self.FILTERS['verified']:
+                        if self.verified != 1:
+                            continue
 
 
-                # print(j)
-                img_or_video = list()
-                try:
-                    for i in j['attachments']:
-                        img_or_video.append(i['photo']['sizes'][2]['url'])
-                except KeyError:
+                    # print(j)
+                    img_or_video = list()
                     try:
                         for i in j['attachments']:
-                            img_or_video.append(i['video']['image'][2]['url'])
+                            img_or_video.append(i['photo']['sizes'][2]['url'])
                     except KeyError:
-                        pass
+                        try:
+                            for i in j['attachments']:
+                                img_or_video.append(i['video']['image'][2]['url'])
+                        except KeyError:
+                            pass
 
-                post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), self.subscribers, self.text, img_or_video, int(self._index + 1), self.title]
-                # print(post)
-                text = ''
-                for j in post[5]:
-                    if j == 'Ь':
-                        text += j.lower()
-                    else:
-                        text += j
-                post[5] = text
-                self.cursor.execute("""INSERT INTO "posts" (user_id, [index], url, title, date, likes, reposts, subscribers, text, img_or_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (self.user_id, post[7], post[0], post[8], post[1], post[2], post[3], post[4], post[5], str(post[6])))
-                self.connection.commit()
-                self.sorted_posts.append(post)
+                    post = ['https://vk.com/wall' + str(j['owner_id']) + '_' + str(j['id']), str(datetime.datetime.utcfromtimestamp(int(j['date'])).strftime('%Y-%m-%d %H:%M:%S')), int(j['likes']['count']), int(j['reposts']['count']), self.subscribers, self.text, img_or_video, int(self._index + 1), self.title]
+                    # print(post)
+                    text = ''
+                    for j in post[5]:
+                        if j == 'Ь':
+                            text += j.lower()
+                        else:
+                            text += j
+                    post[5] = text
+                    self.cursor.execute("""INSERT INTO "posts" (user_id, [index], url, title, date, likes, reposts, subscribers, text, img_or_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (self.user_id, post[7], post[0], post[8], post[1], post[2], post[3], post[4], post[5], str(post[6])))
+                    self.connection.commit()
+                    self.sorted_posts.append(post)
 
-                # self.console.print(f'\n[bold white]Text:[/bold white] [white]{strip_emoji(self.text)}[/white]')
-                # console.print(f'[bold blue]Date:[/bold blue] [blue]{date}[/blue]')
-                # console.print(f'[bold red]Likes:[/bold red] [red]{likes}[/red]', end=', ')
-                # console.print(f'[bold green]Reposts:[/bold green] [green]{reposts}[/green]', end=', ')
-                # console.print(f'[bold yellow]Subscribers:[/bold yellow] [yellow]{subscribers}[/yellow]')
-                # print()
-                # print()
+                    # self.console.print(f'\n[bold white]Text:[/bold white] [white]{strip_emoji(self.text)}[/white]')
+                    # console.print(f'[bold blue]Date:[/bold blue] [blue]{date}[/blue]')
+                    # console.print(f'[bold red]Likes:[/bold red] [red]{likes}[/red]', end=', ')
+                    # console.print(f'[bold green]Reposts:[/bold green] [green]{reposts}[/green]', end=', ')
+                    # console.print(f'[bold yellow]Subscribers:[/bold yellow] [yellow]{subscribers}[/yellow]')
+                    # print()
+                    # print()
 
-                self._index += 1
+                    self._index += 1
 
-                self.end = timer()
+                    self.end = timer()
 
-                self.all_timers.append(self.end - self.start_time)
+                    self.all_timers.append(self.end - self.start_time)
 
-                self.primernoe_time = (sum(self.all_timers) / len(self.all_timers)) * self.LIMIT
-                self.timer = self.primernoe_time - (self.end - self.start)
+                    self.primernoe_time = (sum(self.all_timers) / len(self.all_timers)) * self.LIMIT
+                    self.timer = self.primernoe_time - (self.end - self.start)
 
-                print('≈' + str(round(self.timer, 2)))
+                    print('≈' + str(round(self.timer, 2)))
 
-                self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(round(self.timer, 2)), 'parser_time', self.user_id))
-                self.connection.commit()
+                    self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (str(round(self.timer, 2)), 'parser_time', self.user_id))
+                    self.connection.commit()
 
-        print()
-        self.console.print('[cyan]Parsing from VK completed successfully (', round(self.end - self.start, 2), '[bold cyan]sec[/bold cyan] [cyan])!')
-        print()
+            print()
+            self.console.print('[cyan]Parsing from VK completed successfully (', round(self.end - self.start, 2), '[bold cyan]sec[/bold cyan] [cyan])!')
+            print()
 
-        self.console.print('[bold green]All posts:', len(self.sorted_posts))
+            self.console.print('[bold green]All posts:', len(self.sorted_posts))
 
-        self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (0, 'parser_status', self.user_id))
-        self.connection.commit()
+            self.cursor.execute("""UPDATE params SET status = ? WHERE info = ? AND user_id = ?;""", (0, 'parser_status', self.user_id))
+            self.connection.commit()
 
-        if (self.connection):
-            self.cursor.close()
-            self.connection.close()
-            print("SQLite connection closed")
+            if (self.connection):
+                self.cursor.close()
+                self.connection.close()
+                print("SQLite connection closed")
 
-        path = f"static/users/{self.user_id}/posts.csv"
-        path_2 = f"static/users/{self.user_id}"
+            path = f"static/users/{self.user_id}/posts.csv"
+            path_2 = f"static/users/{self.user_id}"
 
-        if not os.path.exists(path):
-            os.mkdir(os.path.abspath(path_2))
+            if not os.path.exists(path):
+                os.mkdir(os.path.abspath(path_2))
 
-        with open(path, "w", newline='', encoding='utf-16') as csvfile:
-            filewriter = csv.writer(csvfile, dialect='excel', delimiter=',', quoting=csv.QUOTE_ALL)
-            filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
-            for i in self.sorted_posts:
-                i[5] = i[5].replace('\n', ' ')
-                filewriter.writerow([i[0], i[8]] + i[1:8])
+            with open(path, "w", newline='', encoding='utf-16') as csvfile:
+                filewriter = csv.writer(csvfile, dialect='excel', delimiter=',', quoting=csv.QUOTE_ALL)
+                filewriter.writerow(['url', 'title', 'date', 'likes', 'reposts', 'subscribers', 'text', 'images', 'index'])
+                for i in self.sorted_posts:
+                    i[5] = i[5].replace('\n', ' ')
+                    filewriter.writerow([i[0], i[8]] + i[1:8])
 
-        return (self.user_id, self.sorted_posts)
+            return (self.user_id, self.sorted_posts)
+        else:
+            return (self.user_id, list())
 
 
 class starter():
