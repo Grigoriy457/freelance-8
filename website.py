@@ -5,8 +5,9 @@ import sqlite3
 import sys
 from rich.console import Console
 import datetime
+import requests
 
-from settings import TYPE, SERVER_HOST, DEV_HOST, SERVER_AUTO_UPDATE, DEV_AUTO_UPDATE
+from settings import *
 
 
 
@@ -332,7 +333,6 @@ def search_history(page, user_id):
                                     ["Start date", i[8]],
                                     ["End date", i[9]]
                                   ]])
-    print(_data)
 
     cursor.execute("""SELECT * FROM "params" WHERE "user_id"='{}' AND "info"='parser_status';""".format(user_id))
     is_parsing = int(cursor.fetchone()[1])
@@ -374,6 +374,12 @@ def stop_parsing(user_id):
         connection.commit()
     return ""
 
+
+
+@app.route("/todo/")
+def todo():
+    print(dir(requests.get("https://raw.githubusercontent.com/Grigoriy457/freelance-8/main/TODO.txt")))
+    return f'<pre style="word-wrap: break-word; white-space: pre-wrap; font-size: 17px;">{requests.get("https://raw.githubusercontent.com/Grigoriy457/freelance-8/main/TODO.txt").text}</pre>'
 
 
 @app.route("/admin/")
